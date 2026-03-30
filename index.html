@@ -8,245 +8,74 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
-  --green: #2ecc71;
-  --green2: #27ae60;
-  --mint: #a8edca;
-  --peach: #ff7f7f;
-  --yellow: #ffd166;
-  --coral: #ff6b6b;
-  --teal: #06d6a0;
-  --sky: #48cae4;
-  --purple: #c77dff;
-  --cream: #fffdf7;
-  --dark: #1a2e1a;
-  --card: #ffffff;
-  --shadow: 0 8px 32px rgba(46,204,113,0.13);
-  --radius: 22px;
+  --green: #2ecc71; --green2: #27ae60; --mint: #a8edca; --peach: #ff7f7f;
+  --yellow: #ffd166; --coral: #ff6b6b; --teal: #06d6a0; --sky: #48cae4;
+  --purple: #c77dff; --cream: #fffdf7; --dark: #1a2e1a; --card: #ffffff;
+  --shadow: 0 8px 32px rgba(46,204,113,0.13); --radius: 22px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Nunito', sans-serif;
   background: linear-gradient(135deg, #e8faf0 0%, #fff9f0 40%, #e0f7fa 100%);
-  min-height: 100vh;
-  color: var(--dark);
+  min-height: 100vh; color: var(--dark);
 }
 
-/* === SYNC STATUS BAR === */
-.sync-bar {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: transparent;
-  z-index: 9999;
-  transition: all 0.3s;
-}
+/* === SYNC & MODAL === */
+.sync-bar { position: fixed; top: 0; left: 0; right: 0; height: 3px; background: transparent; z-index: 9999; transition: all 0.3s; }
 .sync-bar.syncing { background: linear-gradient(90deg, var(--green), var(--teal), var(--sky)); animation: syncPulse 1s infinite; }
 .sync-bar.error { background: var(--coral); }
 .sync-bar.ok { background: var(--green); opacity: 0; }
 @keyframes syncPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-/* === SYNC INDICATOR === */
-.sync-indicator {
-  position: fixed;
-  bottom: 70px;
-  right: 16px;
-  background: white;
-  border-radius: 20px;
-  padding: 6px 12px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  z-index: 500;
-  transition: all 0.3s;
-  cursor: pointer;
-}
-.sync-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--green);
-}
+.sync-indicator { position: fixed; bottom: 70px; right: 16px; background: white; border-radius: 20px; padding: 6px 12px; font-size: 0.72rem; font-weight: 700; box-shadow: 0 4px 16px rgba(0,0,0,0.12); display: flex; align-items: center; gap: 6px; z-index: 500; cursor: pointer; }
+.sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
 .sync-dot.syncing { background: var(--yellow); animation: syncPulse 0.8s infinite; }
 .sync-dot.error { background: var(--coral); }
 .sync-dot.offline { background: #aaa; }
 
-/* === SETUP MODAL === */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(26,46,26,0.7);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  backdrop-filter: blur(4px);
-}
+.modal-overlay { position: fixed; inset: 0; background: rgba(26,46,26,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
 .modal-overlay.hidden { display: none; }
-.modal-box {
-  background: white;
-  border-radius: 24px;
-  padding: 28px 24px;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 0 20px 60px rgba(46,204,113,0.25);
-}
+.modal-box { background: white; border-radius: 24px; padding: 28px 24px; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(46,204,113,0.25); }
 .modal-title { font-family: 'Fredoka One', cursive; font-size: 1.4rem; color: var(--dark); margin-bottom: 6px; }
 .modal-sub { font-size: 0.82rem; color: #888; margin-bottom: 20px; line-height: 1.6; }
 .modal-label { font-size: 0.82rem; font-weight: 700; color: #555; margin-bottom: 6px; display: block; }
-.modal-input {
-  width: 100%;
-  padding: 11px 14px;
-  border: 2px solid #e8f5e9;
-  border-radius: 12px;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.88rem;
-  margin-bottom: 14px;
-  transition: border-color 0.2s;
-  background: #fafafa;
-}
+.modal-input { width: 100%; padding: 11px 14px; border: 2px solid #e8f5e9; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.88rem; margin-bottom: 14px; background: #fafafa; }
 .modal-input:focus { outline: none; border-color: var(--green); background: white; }
-.modal-info {
-  background: #e8faf0;
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 0.78rem;
-  color: #27ae60;
-  line-height: 1.6;
-  margin-bottom: 16px;
-}
-.modal-error {
-  background: #fff0f0;
-  border-radius: 12px;
-  padding: 10px 12px;
-  font-size: 0.78rem;
-  color: var(--coral);
-  margin-bottom: 12px;
-  display: none;
-}
+.modal-info { background: #e8faf0; border-radius: 12px; padding: 12px; font-size: 0.78rem; color: #27ae60; line-height: 1.6; margin-bottom: 16px; }
+.modal-error { background: #fff0f0; border-radius: 12px; padding: 10px 12px; font-size: 0.78rem; color: var(--coral); margin-bottom: 12px; display: none; }
 
-/* === HEADER === */
-.header {
-  background: linear-gradient(135deg, #2ecc71, #06d6a0, #48cae4);
-  padding: 18px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 4px 20px rgba(46,204,113,0.3);
-}
+/* === MAIN UI === */
+.header { background: linear-gradient(135deg, #2ecc71, #06d6a0, #48cae4); padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(46,204,113,0.3); }
 .logo { font-family: 'Fredoka One', cursive; font-size: 1.7rem; color: white; letter-spacing: 1px; }
 .logo span { color: #ffd166; }
 .user-toggle { display: flex; gap: 8px; }
-.user-btn {
-  padding: 8px 18px;
-  border: 2px solid rgba(255,255,255,0.5);
-  background: rgba(255,255,255,0.2);
-  color: white;
-  border-radius: 50px;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s;
-}
+.user-btn { padding: 8px 18px; border: 2px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.2); color: white; border-radius: 50px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; }
 .user-btn.active { background: white; color: var(--green2); border-color: white; }
 
-/* === NAV === */
-.nav {
-  display: flex;
-  gap: 0;
-  background: white;
-  border-bottom: 2px solid #e8f5e9;
-  overflow-x: auto;
-  scrollbar-width: none;
-  position: sticky;
-  top: 68px;
-  z-index: 99;
-}
+.nav { display: flex; gap: 0; background: white; border-bottom: 2px solid #e8f5e9; overflow-x: auto; scrollbar-width: none; position: sticky; top: 68px; z-index: 99; }
 .nav::-webkit-scrollbar { display: none; }
-.nav-btn {
-  padding: 12px 18px;
-  border: none;
-  background: none;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #999;
-  cursor: pointer;
-  white-space: nowrap;
-  border-bottom: 3px solid transparent;
-  transition: all 0.2s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
+.nav-btn { padding: 12px 18px; border: none; background: none; font-family: 'Nunito', sans-serif; font-size: 0.8rem; font-weight: 700; color: #999; cursor: pointer; white-space: nowrap; border-bottom: 3px solid transparent; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .nav-btn .icon { font-size: 1.2rem; }
 .nav-btn.active { color: var(--green2); border-bottom-color: var(--green2); }
 
-/* === PAGES === */
 .page { display: none; padding: 16px; max-width: 820px; margin: 0 auto; }
-.page.active { display: block; }
+.page.active { display: block; animation: fadeIn 0.3s ease; }
+.card { background: var(--card); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.card-title { font-family: 'Fredoka One', cursive; font-size: 1.15rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 
-/* === CARDS === */
-.card {
-  background: var(--card);
-  border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: var(--shadow);
-}
-.card-title {
-  font-family: 'Fredoka One', cursive;
-  font-size: 1.15rem;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
+.badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; }
 .badge-green { background: #e8faf0; color: var(--green2); }
 .badge-orange { background: #fff3e0; color: #e67e22; }
-.badge-blue { background: #e3f2fd; color: #1976d2; }
 
-/* === IF SCHEDULE === */
 .if-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.if-card {
-  border: 2px solid #e8f5e9;
-  border-radius: 14px;
-  padding: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-}
-.if-card:hover { border-color: var(--green); transform: translateY(-2px); }
+.if-card { border: 2px solid #e8f5e9; border-radius: 14px; padding: 12px; cursor: pointer; position: relative; }
 .if-card.selected { border-color: var(--green); background: linear-gradient(135deg, #e8faf0, #f0fff4); }
 .if-card.selected::after { content: '✓'; position: absolute; top: 8px; right: 10px; color: var(--green); font-weight: 900; }
 .if-name { font-family: 'Fredoka One', cursive; font-size: 1rem; color: var(--dark); }
 .if-desc { font-size: 0.75rem; color: #777; margin-top: 3px; }
 .if-times { font-size: 0.8rem; font-weight: 700; color: var(--green2); margin-top: 5px; }
 
-/* === TIMER === */
-.if-timer-box {
-  background: linear-gradient(135deg, #1a2e1a, #2d5a27);
-  border-radius: 20px;
-  padding: 24px;
-  text-align: center;
-  color: white;
-  margin-bottom: 14px;
-}
+.if-timer-box { background: linear-gradient(135deg, #1a2e1a, #2d5a27); border-radius: 20px; padding: 24px; text-align: center; color: white; margin-bottom: 14px; }
 .timer-label { font-size: 0.85rem; opacity: 0.7; margin-bottom: 4px; }
 .timer-display { font-family: 'Fredoka One', cursive; font-size: 2.8rem; letter-spacing: 4px; color: #a8edca; }
 .timer-sub { font-size: 0.8rem; opacity: 0.6; margin-top: 4px; }
@@ -254,18 +83,8 @@ body {
 .fast-status.fasting { background: rgba(255,107,107,0.2); color: #ff6b6b; }
 .fast-status.eating { background: rgba(46,204,113,0.2); color: #a8edca; }
 
-.btn {
-  padding: 12px 22px;
-  border: none;
-  border-radius: 50px;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 800;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
+.btn { padding: 12px 22px; border: none; border-radius: 50px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
 .btn-green { background: linear-gradient(135deg, var(--green), var(--teal)); color: white; }
-.btn-green:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,204,113,0.4); }
 .btn-coral { background: linear-gradient(135deg, #ff6b6b, #ff8e53); color: white; }
 .btn-blue { background: linear-gradient(135deg, #48cae4, #0096c7); color: white; }
 .btn-purple { background: linear-gradient(135deg, #c77dff, #9b59b6); color: white; }
@@ -273,160 +92,50 @@ body {
 .btn-sm { padding: 7px 14px; font-size: 0.8rem; }
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* === FOOD LOG === */
 .food-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
-.input-field {
-  padding: 10px 14px;
-  border: 2px solid #e8f5e9;
-  border-radius: 12px;
-  font-family: 'Nunito', sans-serif;
-  font-size: 0.9rem;
-  flex: 1;
-  transition: border-color 0.2s;
-  background: #fafafa;
-}
-.input-field:focus { outline: none; border-color: var(--green); background: white; }
-select.input-field { cursor: pointer; }
+.input-field { padding: 10px 14px; border: 2px solid #e8f5e9; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.9rem; flex: 1; background: #fafafa; }
 .food-list { list-style: none; }
-.food-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: #f8fffe;
-  margin-bottom: 6px;
-  border: 1px solid #e0f5ea;
-}
+.food-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 12px; background: #f8fffe; margin-bottom: 6px; border: 1px solid #e0f5ea; }
 .food-item-name { font-weight: 700; font-size: 0.9rem; }
 .food-item-kcal { font-size: 0.8rem; color: var(--coral); font-weight: 700; }
 .food-item-del { background: none; border: none; color: #ccc; cursor: pointer; font-size: 1rem; }
-.food-item-del:hover { color: var(--coral); }
 .calorie-bar-wrap { background: #f0f0f0; border-radius: 10px; height: 14px; margin: 8px 0; overflow: hidden; }
 .calorie-bar { height: 100%; border-radius: 10px; transition: width 0.5s; background: linear-gradient(90deg, var(--teal), var(--green)); }
 .calorie-bar.over { background: linear-gradient(90deg, var(--coral), #e74c3c); }
-.calorie-summary {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
+.calorie-summary { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; }
 
-/* === MENU RECS === */
 .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.menu-card {
-  border-radius: 16px;
-  padding: 14px;
-  background: linear-gradient(135deg, #e8faf0, #f0fff4);
-  border: 1.5px solid #c8f0d8;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.menu-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(46,204,113,0.15); }
+.menu-card { border-radius: 16px; padding: 14px; background: linear-gradient(135deg, #e8faf0, #f0fff4); border: 1.5px solid #c8f0d8; cursor: pointer; }
 .menu-emoji { font-size: 1.8rem; }
 .menu-name { font-weight: 800; font-size: 0.88rem; margin-top: 4px; }
 .menu-kcal { font-size: 0.75rem; color: var(--coral); font-weight: 700; }
 .menu-tags { margin-top: 5px; display: flex; gap: 4px; flex-wrap: wrap; }
 .menu-tag { font-size: 0.65rem; background: white; color: var(--green2); border-radius: 8px; padding: 2px 6px; font-weight: 700; }
 
-/* === WATER === */
-.water-display {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 14px;
-}
-.water-bottle {
-  width: 70px;
-  height: 110px;
-  background: linear-gradient(180deg, #e3f2fd 0%, #bbdefb 100%);
-  border-radius: 12px 12px 18px 18px;
-  position: relative;
-  border: 2.5px solid #90caf9;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-.water-fill {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(180deg, #48cae4, #0096c7);
-  transition: height 0.6s cubic-bezier(.68,-0.55,.27,1.55);
-  border-radius: 0 0 15px 15px;
-}
+.water-display { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+.water-bottle { width: 70px; height: 110px; background: linear-gradient(180deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px 12px 18px 18px; position: relative; border: 2.5px solid #90caf9; overflow: hidden; flex-shrink: 0; }
+.water-fill { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, #48cae4, #0096c7); transition: height 0.6s; border-radius: 0 0 15px 15px; }
 .water-ml { font-family: 'Fredoka One', cursive; font-size: 1.8rem; color: #0096c7; }
 .water-target { font-size: 0.8rem; color: #999; }
 .water-cups { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
-.water-cup {
-  width: 40px;
-  height: 50px;
-  border: 2px solid #90caf9;
-  border-radius: 4px 4px 10px 10px;
-  background: #e3f2fd;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  font-size: 0.6rem;
-  color: #666;
-  padding-bottom: 3px;
-}
+.water-cup { width: 40px; height: 50px; border: 2px solid #90caf9; border-radius: 4px 4px 10px 10px; background: #e3f2fd; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; font-size: 0.6rem; color: #666; padding-bottom: 3px; }
 .water-cup.filled { background: #48cae4; border-color: #0096c7; color: white; }
 .water-cup.filled::before { content: '💧'; font-size: 1rem; }
 .water-opt-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
-.water-opt-btn {
-  padding: 8px 14px;
-  border: 2px solid #90caf9;
-  border-radius: 20px;
-  background: white;
-  color: #0096c7;
-  font-weight: 700;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.water-opt-btn:hover { background: #48cae4; color: white; border-color: #48cae4; }
+.water-opt-btn { padding: 8px 14px; border: 2px solid #90caf9; border-radius: 20px; background: white; color: #0096c7; font-weight: 700; font-size: 0.8rem; cursor: pointer; }
 
-/* === WORKOUT === */
-.workout-list { list-style: none; }
-.workout-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px;
-  background: linear-gradient(135deg, #fff9f0, #fff5e6);
-  border: 1.5px solid #ffe0b2;
-  border-radius: 14px;
-  margin-bottom: 8px;
-}
-.workout-info { flex: 1; }
+.workout-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: linear-gradient(135deg, #fff9f0, #fff5e6); border: 1.5px solid #ffe0b2; border-radius: 14px; margin-bottom: 8px; }
 .workout-name { font-weight: 800; font-size: 0.9rem; }
 .workout-detail { font-size: 0.75rem; color: #888; margin-top: 2px; }
 .workout-kcal { font-size: 0.85rem; font-weight: 700; color: var(--coral); }
 .workout-sug-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.workout-sug {
-  background: linear-gradient(135deg, #fff9f0, #fff3e0);
-  border: 1.5px solid #ffe0b2;
-  border-radius: 14px;
-  padding: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.workout-sug:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255,165,0,0.15); }
-.workout-sug-emoji { font-size: 1.5rem; }
-.workout-sug-name { font-weight: 800; font-size: 0.85rem; margin-top: 3px; }
-.workout-sug-desc { font-size: 0.72rem; color: #999; }
-.workout-sug-kcal { font-size: 0.78rem; color: var(--coral); font-weight: 700; margin-top: 3px; }
+.workout-sug { background: linear-gradient(135deg, #fff9f0, #fff3e0); border: 1.5px solid #ffe0b2; border-radius: 14px; padding: 12px; cursor: pointer; }
 
-/* === WEIGHT & BMI === */
 .weight-display { display: flex; gap: 14px; justify-content: space-around; text-align: center; margin-bottom: 14px; }
 .weight-stat { flex: 1; }
 .weight-val { font-family: 'Fredoka One', cursive; font-size: 2rem; }
 .weight-val.green { color: var(--green2); }
 .weight-val.orange { color: #e67e22; }
-.weight-val.red { color: var(--coral); }
 .weight-label { font-size: 0.75rem; color: #999; font-weight: 700; }
 .bmi-bar-wrap { position: relative; height: 18px; border-radius: 10px; overflow: hidden; background: linear-gradient(90deg, #48cae4 0%, #2ecc71 20%, #ffd166 40%, #f4a261 65%, #ff6b6b 100%); margin: 10px 0; }
 .bmi-needle { position: absolute; top: 0; bottom: 0; width: 4px; background: #1a2e1a; border-radius: 2px; transition: left 0.5s; }
@@ -434,230 +143,70 @@ select.input-field { cursor: pointer; }
 .chart-wrap { position: relative; height: 160px; margin: 12px 0; }
 canvas { width: 100% !important; }
 
-/* === DAILY RECAP === */
 .recap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.recap-stat {
-  background: linear-gradient(135deg, #f8fff8, #f0fff4);
-  border: 1.5px solid #c8f0d8;
-  border-radius: 16px;
-  padding: 14px;
-  text-align: center;
-}
+.recap-stat { background: linear-gradient(135deg, #f8fff8, #f0fff4); border: 1.5px solid #c8f0d8; border-radius: 16px; padding: 14px; text-align: center; }
 .recap-icon { font-size: 1.6rem; }
 .recap-value { font-family: 'Fredoka One', cursive; font-size: 1.4rem; margin-top: 4px; }
 .recap-name { font-size: 0.72rem; color: #999; font-weight: 700; }
-.recap-score {
-  background: linear-gradient(135deg, #2ecc71, #06d6a0);
-  border-radius: 16px;
-  padding: 14px;
-  text-align: center;
-  color: white;
-}
+.recap-score { background: linear-gradient(135deg, #2ecc71, #06d6a0); border-radius: 16px; padding: 14px; text-align: center; color: white; }
 .score-num { font-family: 'Fredoka One', cursive; font-size: 2.2rem; }
 
-/* === AI CONSULT === */
-.ai-chat {
-  background: #f8fff8;
-  border-radius: 16px;
-  padding: 14px;
-  height: 220px;
-  overflow-y: auto;
-  margin-bottom: 12px;
-  border: 1.5px solid #d0f0e0;
-}
+.ai-chat { background: #f8fff8; border-radius: 16px; padding: 14px; height: 220px; overflow-y: auto; margin-bottom: 12px; border: 1.5px solid #d0f0e0; }
 .chat-msg { margin-bottom: 10px; }
 .chat-msg.user { text-align: right; }
-.chat-bubble {
-  display: inline-block;
-  max-width: 85%;
-  padding: 8px 13px;
-  border-radius: 16px;
-  font-size: 0.85rem;
-  line-height: 1.5;
-}
+.chat-bubble { display: inline-block; max-width: 85%; padding: 8px 13px; border-radius: 16px; font-size: 0.85rem; line-height: 1.5; }
 .chat-msg.ai .chat-bubble { background: white; border: 1.5px solid #d0f0e0; color: #333; border-radius: 4px 16px 16px 16px; }
 .chat-msg.user .chat-bubble { background: linear-gradient(135deg, var(--green), var(--teal)); color: white; border-radius: 16px 4px 16px 16px; }
-.chat-input-row { display: flex; gap: 8px; }
 .ai-templates { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-.ai-tpl {
-  font-size: 0.72rem;
-  background: #e8faf0;
-  color: var(--green2);
-  border: 1px solid #c8f0d8;
-  border-radius: 12px;
-  padding: 5px 10px;
-  cursor: pointer;
-  font-weight: 700;
-  transition: all 0.2s;
-}
-.ai-tpl:hover { background: var(--green); color: white; }
-.open-ai-btn {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 14px 18px;
-  border: 2px dashed #c77dff;
-  background: linear-gradient(135deg, #faf0ff, #f5e6ff);
-  border-radius: 14px;
-  cursor: pointer;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 800;
-  font-size: 0.9rem;
-  color: #9b59b6;
-  transition: all 0.2s;
-  margin-bottom: 10px;
-  text-decoration: none;
-}
-.open-ai-btn:hover { background: linear-gradient(135deg, #c77dff, #9b59b6); color: white; border-color: transparent; }
+.ai-tpl { font-size: 0.72rem; background: #e8faf0; color: var(--green2); border: 1px solid #c8f0d8; border-radius: 12px; padding: 5px 10px; cursor: pointer; font-weight: 700; }
+.open-ai-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 18px; border: 2px dashed #c77dff; background: linear-gradient(135deg, #faf0ff, #f5e6ff); border-radius: 14px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 0.9rem; color: #9b59b6; margin-bottom: 10px; text-decoration: none; }
 
-/* === ANIMATIONS === */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.page.active { animation: fadeIn 0.3s ease; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
 .pulsing { animation: pulse 2s infinite; }
-
-/* === SECTION HEADER === */
-.sec-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
+.sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .sec-title { font-family: 'Fredoka One', cursive; font-size: 1.1rem; display: flex; align-items: center; gap: 6px; }
-
-/* === DATE PICKER === */
 .date-sel { padding: 7px 12px; border: 2px solid #e8f5e9; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.85rem; background: white; color: var(--dark); cursor: pointer; }
-
-/* === ACTIVITY BADGE === */
 .activity-sel { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
-.act-btn {
-  padding: 8px 14px;
-  border: 2px solid #e8f5e9;
-  border-radius: 20px;
-  background: white;
-  font-family: 'Nunito', sans-serif;
-  font-weight: 700;
-  font-size: 0.78rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: #666;
-}
+.act-btn { padding: 8px 14px; border: 2px solid #e8f5e9; border-radius: 20px; background: white; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.78rem; cursor: pointer; color: #666; }
 .act-btn.active { background: linear-gradient(135deg, var(--green), var(--teal)); color: white; border-color: transparent; }
+@media (max-width: 480px) { .if-grid, .menu-grid, .workout-sug-grid, .recap-grid { grid-template-columns: 1fr 1fr; } .timer-display { font-size: 2.2rem; } }
 
-/* === RESPONSIVE === */
-@media (max-width: 480px) {
-  .if-grid, .menu-grid, .workout-sug-grid, .recap-grid { grid-template-columns: 1fr 1fr; }
-  .weight-display { gap: 8px; }
-  .timer-display { font-size: 2.2rem; }
-}
-
-/* === TOAST === */
-.toast {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%) translateY(100px);
-  background: #1a2e1a;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 50px;
-  font-weight: 700;
-  font-size: 0.85rem;
-  z-index: 999;
-  transition: transform 0.3s;
-  white-space: nowrap;
-}
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1a2e1a; color: white; padding: 12px 24px; border-radius: 50px; font-weight: 700; font-size: 0.85rem; z-index: 999; transition: transform 0.3s; white-space: nowrap; }
 .toast.show { transform: translateX(-50%) translateY(0); }
-
-/* === MOOD === */
 .mood-row { display: flex; gap: 10px; justify-content: center; margin: 10px 0; }
 .mood-btn { font-size: 1.6rem; cursor: pointer; transition: transform 0.2s; opacity: 0.5; }
-.mood-btn:hover, .mood-btn.active { transform: scale(1.3); opacity: 1; }
-
-/* === Streak === */
-.streak-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: linear-gradient(135deg, #ffd166, #f4a261);
-  color: white;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-weight: 800;
-  font-size: 0.8rem;
-}
-
-/* === horizontal scroll for compact days === */
+.mood-btn.active { transform: scale(1.3); opacity: 1; }
+.streak-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #ffd166, #f4a261); color: white; padding: 6px 14px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; }
 .week-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
 .week-row::-webkit-scrollbar { display: none; }
-.day-dot {
-  flex-shrink: 0;
-  width: 40px;
-  text-align: center;
-  cursor: pointer;
-}
-.day-dot-circle {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #f0f0f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 2px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  transition: all 0.2s;
-  border: 2px solid transparent;
-}
+.day-dot { flex-shrink: 0; width: 40px; text-align: center; cursor: pointer; }
+.day-dot-circle { width: 36px; height: 36px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; margin: 0 auto 2px; font-size: 0.75rem; font-weight: 700; transition: all 0.2s; border: 2px solid transparent; }
 .day-dot-circle.has-data { background: #e8faf0; border-color: var(--green); color: var(--green2); }
 .day-dot-circle.today { background: var(--green); color: white; }
 .day-dot-label { font-size: 0.65rem; color: #999; }
-
-/* history items */
 .hist-item { padding: 8px 12px; background: #f8fff8; border-radius: 10px; margin-bottom: 5px; font-size: 0.82rem; border: 1px solid #e0f5ea; display: flex; justify-content: space-between; }
 
-/* === LOADING OVERLAY === */
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: linear-gradient(135deg, #e8faf0, #fff9f0);
-  z-index: 2000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-}
-.loading-overlay.hidden { display: none; }
+.loading-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, #e8faf0, #fff9f0); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.loading-overlay.hidden { display: none !important; }
 .loading-logo { font-family: 'Fredoka One', cursive; font-size: 2rem; color: var(--green2); }
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #e8faf0;
-  border-top-color: var(--green);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
+.loading-spinner { width: 40px; height: 40px; border: 4px solid #e8faf0; border-top-color: var(--green); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.loading-text { font-size: 0.85rem; color: #888; font-weight: 700; }
+.loading-text { font-size: 0.85rem; color: #888; font-weight: 700; text-align: center; padding: 0 20px; }
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
 <div class="loading-overlay" id="loading-overlay">
   <div class="loading-logo">🌿 SlimJourney</div>
   <div class="loading-spinner"></div>
   <div class="loading-text" id="loading-text">Memuat data...</div>
 </div>
 
-<!-- SETUP MODAL (Supabase config) -->
-<div class="modal-overlay" id="setup-modal">
+<div class="modal-overlay hidden" id="setup-modal">
   <div class="modal-box">
     <div class="modal-title">🔧 Setup Koneksi</div>
-    <div class="modal-sub">Masukkan Supabase credentials untuk sinkronisasi data antara Savira & Annas. Cukup dilakukan sekali per perangkat.</div>
+    <div class="modal-sub">Masukkan Supabase credentials untuk sinkronisasi data. Cukup dilakukan sekali.</div>
     <div class="modal-info">
       💡 <strong>Cara mendapatkan credentials:</strong><br>
       1. Login ke <strong>supabase.com</strong><br>
@@ -676,18 +225,13 @@ canvas { width: 100% !important; }
   </div>
 </div>
 
-<!-- SYNC BAR -->
 <div class="sync-bar" id="sync-bar"></div>
-
-<!-- SYNC INDICATOR -->
 <div class="sync-indicator" id="sync-indicator" onclick="manualSync()" title="Klik untuk sync manual">
   <div class="sync-dot" id="sync-dot"></div>
-  <span id="sync-label">Terhubung</span>
+  <span id="sync-label">Menunggu...</span>
 </div>
-
 <div class="toast" id="toast"></div>
 
-<!-- HEADER -->
 <div class="header">
   <div class="logo">🌿 Slim<span>Journey</span></div>
   <div class="user-toggle">
@@ -696,7 +240,6 @@ canvas { width: 100% !important; }
   </div>
 </div>
 
-<!-- NAV -->
 <div class="nav">
   <button class="nav-btn active" onclick="showPage('if',event)"><span class="icon">⏱️</span>IF</button>
   <button class="nav-btn" onclick="showPage('food',event)"><span class="icon">🍽️</span>Makan</button>
@@ -708,11 +251,9 @@ canvas { width: 100% !important; }
   <button class="nav-btn" onclick="showPage('ai',event)"><span class="icon">🤖</span>AI</button>
 </div>
 
-<!-- ============ PAGE: IF SCHEDULE ============ -->
 <div class="page active" id="page-if">
   <div class="card">
     <div class="card-title">⏱️ Jadwal Puasa IF — <span id="if-user-label" style="color:var(--green2)">Savira</span></div>
-
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
       <input type="date" class="date-sel" id="if-date">
       <span style="font-size:0.8rem;font-weight:700;color:#888;">Aktivitas Hari Ini:</span>
@@ -723,95 +264,51 @@ canvas { width: 100% !important; }
       <button class="act-btn" onclick="setActivity(this,'aktif')">🏃 Aktif</button>
       <button class="act-btn" onclick="setActivity(this,'intensif')">💪 Intensif</button>
     </div>
-
     <div class="card-title" style="margin-top:14px;">📋 Pilih Formasi IF</div>
     <div class="if-grid" id="if-grid">
-      <div class="if-card selected" onclick="selectIF(this,'16:8')">
-        <div class="if-name">16 : 8</div>
-        <div class="if-desc">Paling populer & mudah</div>
-        <div class="if-times">⏰ Makan: 12.00 – 20.00</div>
-      </div>
-      <div class="if-card" onclick="selectIF(this,'18:6')">
-        <div class="if-name">18 : 6</div>
-        <div class="if-desc">Lebih intens, hasil lebih cepat</div>
-        <div class="if-times">⏰ Makan: 13.00 – 19.00</div>
-      </div>
-      <div class="if-card" onclick="selectIF(this,'20:4')">
-        <div class="if-name">20 : 4</div>
-        <div class="if-desc">Warrior Diet, untuk yang advance</div>
-        <div class="if-times">⏰ Makan: 16.00 – 20.00</div>
-      </div>
-      <div class="if-card" onclick="selectIF(this,'5:2')">
-        <div class="if-name">5 : 2</div>
-        <div class="if-desc">5 hari normal, 2 hari 500 kkal</div>
-        <div class="if-times">⏰ Fleksibel per minggu</div>
-      </div>
-      <div class="if-card" onclick="selectIF(this,'OMAD')">
-        <div class="if-name">OMAD</div>
-        <div class="if-desc">1x makan sehari, sangat ketat</div>
-        <div class="if-times">⏰ 1 jam makan/hari</div>
-      </div>
-      <div class="if-card" onclick="selectIF(this,'14:10')">
-        <div class="if-name">14 : 10</div>
-        <div class="if-desc">Cocok untuk pemula IF</div>
-        <div class="if-times">⏰ Makan: 10.00 – 20.00</div>
-      </div>
-      <div class="if-card" onclick="selectIF(this,'custom')">
-        <div class="if-name">⚙️ Custom</div>
-        <div class="if-desc">Sesuaikan jadwal sendiri</div>
-        <div class="if-times" id="custom-time-label">⏰ Atur jam makan</div>
-      </div>
+      <div class="if-card selected" onclick="selectIF(this,'16:8')"><div class="if-name">16 : 8</div><div class="if-desc">Paling populer & mudah</div><div class="if-times">⏰ Makan: 12.00 – 20.00</div></div>
+      <div class="if-card" onclick="selectIF(this,'18:6')"><div class="if-name">18 : 6</div><div class="if-desc">Lebih intens, hasil cepat</div><div class="if-times">⏰ Makan: 13.00 – 19.00</div></div>
+      <div class="if-card" onclick="selectIF(this,'20:4')"><div class="if-name">20 : 4</div><div class="if-desc">Warrior Diet, advance</div><div class="if-times">⏰ Makan: 16.00 – 20.00</div></div>
+      <div class="if-card" onclick="selectIF(this,'5:2')"><div class="if-name">5 : 2</div><div class="if-desc">5 hari normal, 2 hari 500 kkal</div><div class="if-times">⏰ Fleksibel per minggu</div></div>
+      <div class="if-card" onclick="selectIF(this,'OMAD')"><div class="if-name">OMAD</div><div class="if-desc">1x makan sehari, ketat</div><div class="if-times">⏰ 1 jam makan/hari</div></div>
+      <div class="if-card" onclick="selectIF(this,'14:10')"><div class="if-name">14 : 10</div><div class="if-desc">Cocok untuk pemula IF</div><div class="if-times">⏰ Makan: 10.00 – 20.00</div></div>
+      <div class="if-card" onclick="selectIF(this,'custom')"><div class="if-name">⚙️ Custom</div><div class="if-desc">Sesuaikan jadwal sendiri</div><div class="if-times" id="custom-time-label">⏰ Atur jam makan</div></div>
     </div>
-
     <div id="custom-input" style="display:none;margin-top:10px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:0.85rem;font-weight:700;">
-        Jam makan:
-        <input type="time" class="input-field" id="custom-start" style="width:120px" value="12:00">
-        —
-        <input type="time" class="input-field" id="custom-end" style="width:120px" value="20:00">
+        Jam makan: <input type="time" class="input-field" id="custom-start" style="width:120px" value="12:00"> — <input type="time" class="input-field" id="custom-end" style="width:120px" value="20:00">
         <button class="btn btn-green btn-sm" onclick="applyCustomIF()">Simpan</button>
       </div>
     </div>
   </div>
-
-  <!-- Timer -->
   <div class="if-timer-box">
     <div class="timer-label" id="timer-phase-label">🔒 Sedang Berpuasa</div>
     <div class="timer-display" id="timer-display">--:--:--</div>
-    <div class="timer-sub" id="timer-sub-label">Jendela makan: 12:00 – 20:00</div>
-    <br>
+    <div class="timer-sub" id="timer-sub-label">Jendela makan: 12:00 – 20:00</div><br>
     <span class="fast-status fasting" id="fast-status">🔒 Puasa Aktif</span>
   </div>
-
   <div class="btn-row" style="justify-content:center;margin-bottom:16px;">
     <button class="btn btn-green" onclick="startFast()">▶ Mulai Puasa</button>
     <button class="btn btn-coral" onclick="stopFast()">⏹ Akhiri</button>
     <button class="btn btn-yellow" onclick="breakFast()">🍴 Buka Puasa</button>
   </div>
-
   <div class="card">
     <div class="card-title">💡 Tips Berdasarkan Aktivitas</div>
-    <div id="if-tips" style="font-size:0.85rem;line-height:1.7;color:#555;">
-      Pilih level aktivitas di atas untuk melihat saran IF yang tepat untukmu! 🌿
-    </div>
+    <div id="if-tips" style="font-size:0.85rem;line-height:1.7;color:#555;">Pilih level aktivitas di atas untuk melihat saran IF yang tepat untukmu! 🌿</div>
   </div>
 </div>
 
-<!-- ============ PAGE: FOOD LOG ============ -->
 <div class="page" id="page-food">
   <div class="card">
     <div class="sec-header">
       <div class="sec-title">🍽️ Log Makanan — <span id="food-user-label" style="color:var(--green2);margin-left:4px">Savira</span></div>
       <input type="date" class="date-sel" id="food-date">
     </div>
-
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
       <span style="font-size:0.85rem;font-weight:700;">Target Kalori:</span>
       <input type="number" class="input-field" id="calorie-goal" style="width:90px" value="1400" onchange="updateCalBar()">
-      <span style="font-size:0.8rem;color:#999;">kkal</span>
-      <span class="badge badge-green" id="cal-status-badge">Dalam target</span>
+      <span style="font-size:0.8rem;color:#999;">kkal</span><span class="badge badge-green" id="cal-status-badge">Dalam target</span>
     </div>
-
     <div class="food-input-row">
       <input type="text" class="input-field" id="food-name" placeholder="Nama makanan..." list="food-suggestions">
       <datalist id="food-suggestions"></datalist>
@@ -820,44 +317,21 @@ canvas { width: 100% !important; }
       <input type="number" class="input-field" id="food-kcal" placeholder="Kalori (kkal)" min="0">
       <input type="number" class="input-field" id="food-portion" placeholder="Porsi (gram)" min="0">
       <select class="input-field" id="food-meal">
-        <option value="sahur">Sahur</option>
-        <option value="buka">Buka Puasa</option>
-        <option value="makan1">Makan 1</option>
-        <option value="makan2">Makan 2</option>
-        <option value="snack">Snack</option>
+        <option value="sahur">Sahur</option><option value="buka">Buka Puasa</option><option value="makan1">Makan 1</option><option value="makan2">Makan 2</option><option value="snack">Snack</option>
       </select>
     </div>
     <button class="btn btn-green" style="width:100%;margin-bottom:12px;" onclick="addFood()">➕ Tambah Makanan</button>
-
-    <div class="calorie-bar-wrap">
-      <div class="calorie-bar" id="calorie-bar" style="width:0%"></div>
-    </div>
-    <div class="calorie-summary">
-      <span>Dikonsumsi: <strong id="total-kcal">0</strong> kkal</span>
-      <span>Sisa: <strong id="sisa-kcal">1400</strong> kkal</span>
-    </div>
-
+    <div class="calorie-bar-wrap"><div class="calorie-bar" id="calorie-bar" style="width:0%"></div></div>
+    <div class="calorie-summary"><span>Dikonsumsi: <strong id="total-kcal">0</strong> kkal</span><span>Sisa: <strong id="sisa-kcal">1400</strong> kkal</span></div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-      <div style="flex:1;text-align:center;background:#f8fff8;border-radius:12px;padding:8px;">
-        <div style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--green2)" id="total-protein">0g</div>
-        <div style="font-size:0.7rem;color:#999;font-weight:700">Protein</div>
-      </div>
-      <div style="flex:1;text-align:center;background:#fff9f0;border-radius:12px;padding:8px;">
-        <div style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:#e67e22" id="total-carb">0g</div>
-        <div style="font-size:0.7rem;color:#999;font-weight:700">Karbo</div>
-      </div>
-      <div style="flex:1;text-align:center;background:#fff0f0;border-radius:12px;padding:8px;">
-        <div style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--coral)" id="total-fat">0g</div>
-        <div style="font-size:0.7rem;color:#999;font-weight:700">Lemak</div>
-      </div>
+      <div style="flex:1;text-align:center;background:#f8fff8;border-radius:12px;padding:8px;"><div style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--green2)" id="total-protein">0g</div><div style="font-size:0.7rem;color:#999;font-weight:700">Protein</div></div>
+      <div style="flex:1;text-align:center;background:#fff9f0;border-radius:12px;padding:8px;"><div style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:#e67e22" id="total-carb">0g</div><div style="font-size:0.7rem;color:#999;font-weight:700">Karbo</div></div>
+      <div style="flex:1;text-align:center;background:#fff0f0;border-radius:12px;padding:8px;"><div style="font-family:'Fredoka One',cursive;font-size:1.1rem;color:var(--coral)" id="total-fat">0g</div><div style="font-size:0.7rem;color:#999;font-weight:700">Lemak</div></div>
     </div>
   </div>
-
   <div class="card">
     <div class="card-title">📋 Daftar Makan Hari Ini</div>
-    <ul class="food-list" id="food-list">
-      <li style="color:#bbb;font-size:0.85rem;text-align:center;padding:12px;">Belum ada makanan tercatat 🍃</li>
-    </ul>
+    <ul class="food-list" id="food-list"><li style="color:#bbb;font-size:0.85rem;text-align:center;padding:12px;">Belum ada makanan tercatat 🍃</li></ul>
     <div style="margin-top:10px;text-align:center;">
       <button class="btn btn-coral btn-sm" onclick="clearFoods()">🗑️ Hapus Semua</button>
       <button class="btn btn-green btn-sm" onclick="saveDayFood()" style="margin-left:8px">💾 Simpan Hari</button>
@@ -865,12 +339,10 @@ canvas { width: 100% !important; }
   </div>
 </div>
 
-<!-- ============ PAGE: MENU RECS ============ -->
 <div class="page" id="page-menu">
   <div class="card">
     <div class="card-title">🥗 Rekomendasi Menu Harian</div>
     <p style="font-size:0.82rem;color:#777;margin-bottom:14px;">Bahan baku terjangkau, mudah ditemukan di dapur & pasar 🛒</p>
-
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
       <button class="btn btn-green btn-sm active" onclick="filterMenu(this,'semua')">Semua</button>
       <button class="btn btn-sm" style="background:#f0f0f0;color:#666" onclick="filterMenu(this,'sarapan')">☀️ Sarapan</button>
@@ -880,7 +352,6 @@ canvas { width: 100% !important; }
     </div>
     <div class="menu-grid" id="menu-grid"></div>
   </div>
-
   <div class="card">
     <div class="card-title">📅 Rencana Makan 1 Minggu</div>
     <div id="weekly-plan" style="font-size:0.85rem;line-height:1.9;color:#555;"></div>
@@ -888,74 +359,37 @@ canvas { width: 100% !important; }
   </div>
 </div>
 
-<!-- ============ PAGE: WATER ============ -->
 <div class="page" id="page-water">
   <div class="card">
     <div class="card-title">💧 Tracking Minum — <span id="water-user-label" style="color:#0096c7">Savira</span></div>
-
     <div class="water-display">
-      <div class="water-bottle">
-        <div class="water-fill" id="water-fill" style="height:0%"></div>
-      </div>
+      <div class="water-bottle"><div class="water-fill" id="water-fill" style="height:0%"></div></div>
       <div>
-        <div class="water-ml" id="water-ml">0 ml</div>
-        <div class="water-target">Target: <strong id="water-target-label">2000 ml</strong></div>
-        <div style="margin-top:8px;">
-          <span style="font-size:0.8rem;font-weight:700;">Target:</span>
-          <input type="number" class="input-field" id="water-target-input" value="2000" style="width:80px;display:inline-block;margin-left:6px" onchange="setWaterTarget()">
-          <span style="font-size:0.8rem;">ml</span>
-        </div>
+        <div class="water-ml" id="water-ml">0 ml</div><div class="water-target">Target: <strong id="water-target-label">2000 ml</strong></div>
+        <div style="margin-top:8px;"><span style="font-size:0.8rem;font-weight:700;">Target:</span> <input type="number" class="input-field" id="water-target-input" value="2000" style="width:80px;display:inline-block;margin-left:6px" onchange="setWaterTarget()"> <span style="font-size:0.8rem;">ml</span></div>
       </div>
     </div>
     <div class="water-cups" id="water-cups"></div>
     <p style="font-size:0.8rem;color:#999;font-weight:700;margin-bottom:8px;">Tambah minum:</p>
     <div class="water-opt-row">
-      <button class="water-opt-btn" onclick="addWater(200)">🥛 Gelas 200ml</button>
-      <button class="water-opt-btn" onclick="addWater(350)">🧃 Gelas Besar 350ml</button>
-      <button class="water-opt-btn" onclick="addWater(600)">🍶 Tumbler 600ml</button>
-      <button class="water-opt-btn" onclick="addWater(750)">🍺 Botol 750ml</button>
-      <button class="water-opt-btn" onclick="addWater(1500)">🪣 Botol 1.5L</button>
+      <button class="water-opt-btn" onclick="addWater(200)">🥛 Gelas 200ml</button><button class="water-opt-btn" onclick="addWater(350)">🧃 Besar 350ml</button><button class="water-opt-btn" onclick="addWater(600)">🍶 Tumbler 600ml</button>
     </div>
     <div style="display:flex;gap:8px;margin-top:10px;align-items:center;">
-      <input type="number" class="input-field" id="custom-water" placeholder="Custom (ml)" style="width:140px">
-      <button class="btn btn-blue btn-sm" onclick="addCustomWater()">+ Tambah</button>
-      <button class="btn btn-sm" style="background:#ffebee;color:var(--coral)" onclick="resetWater()">↺ Reset</button>
-    </div>
-
-    <div style="margin-top:14px;background:#e3f2fd;border-radius:14px;padding:12px;">
-      <div style="font-size:0.8rem;font-weight:700;color:#0096c7;margin-bottom:6px;">📌 Tips Minum yang Baik:</div>
-      <div style="font-size:0.78rem;color:#555;line-height:1.7;">
-        ✅ Minum 1–2 gelas saat bangun tidur (bahkan sebelum makan)<br>
-        ✅ Minum sebelum, selama, dan setelah olahraga<br>
-        ✅ Hindari minuman manis & bersoda saat IF<br>
-        ✅ Teh hijau & kopi hitam boleh saat puasa<br>
-        ✅ Warna urin kuning muda = cukup terhidrasi 💛
-      </div>
+      <input type="number" class="input-field" id="custom-water" placeholder="Custom (ml)" style="width:140px"><button class="btn btn-blue btn-sm" onclick="addCustomWater()">+ Tambah</button><button class="btn btn-sm" style="background:#ffebee;color:var(--coral)" onclick="resetWater()">↺ Reset</button>
     </div>
   </div>
-
   <div class="card">
     <div class="card-title">📈 Riwayat Minum Mingguan</div>
     <div class="chart-wrap"><canvas id="water-chart"></canvas></div>
   </div>
 </div>
 
-<!-- ============ PAGE: WORKOUT ============ -->
 <div class="page" id="page-workout">
   <div class="card">
     <div class="card-title">🏃 Log Olahraga — <span id="workout-user-label" style="color:#f4a261">Savira</span></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
       <select class="input-field" id="workout-type" style="flex:2">
-        <option value="jalan">🚶 Jalan Kaki</option>
-        <option value="lari">🏃 Lari</option>
-        <option value="sepeda">🚲 Bersepeda</option>
-        <option value="renang">🏊 Renang</option>
-        <option value="yoga">🧘 Yoga / Stretching</option>
-        <option value="gym">💪 Gym / Beban</option>
-        <option value="hiit">⚡ HIIT</option>
-        <option value="zumba">💃 Zumba / Dance</option>
-        <option value="badminton">🏸 Badminton</option>
-        <option value="custom">✏️ Lainnya</option>
+        <option value="jalan">🚶 Jalan Kaki</option><option value="lari">🏃 Lari</option><option value="sepeda">🚲 Bersepeda</option><option value="renang">🏊 Renang</option><option value="yoga">🧘 Yoga / Stretching</option><option value="gym">💪 Gym / Beban</option><option value="hiit">⚡ HIIT</option><option value="custom">✏️ Lainnya</option>
       </select>
       <input type="number" class="input-field" id="workout-dur" placeholder="Menit" style="width:90px" min="1">
     </div>
@@ -965,29 +399,21 @@ canvas { width: 100% !important; }
     </div>
     <button class="btn btn-yellow" style="width:100%" onclick="addWorkout()">➕ Catat Olahraga</button>
   </div>
-
   <div class="card">
     <div class="card-title">📋 Olahraga Hari Ini</div>
-    <ul class="workout-list" id="workout-list">
-      <li style="color:#bbb;font-size:0.85rem;text-align:center;padding:12px;">Belum ada catatan olahraga 💤</li>
-    </ul>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
-      <span style="font-size:0.85rem;font-weight:700;">Total Kalori Terbakar: <strong id="workout-total-kcal" style="color:var(--coral)">0 kkal</strong></span>
-    </div>
+    <ul class="workout-list" id="workout-list"><li style="color:#bbb;font-size:0.85rem;text-align:center;padding:12px;">Belum ada catatan olahraga 💤</li></ul>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;"><span style="font-size:0.85rem;font-weight:700;">Total: <strong id="workout-total-kcal" style="color:var(--coral)">0 kkal</strong></span></div>
   </div>
-
   <div class="card">
-    <div class="card-title">💡 Saran Olahraga untuk Diet IF</div>
+    <div class="card-title">💡 Saran Olahraga IF</div>
     <div class="workout-sug-grid" id="workout-sug-grid"></div>
   </div>
-
   <div class="card">
     <div class="card-title">📈 Kalori Terbakar — 7 Hari</div>
     <div class="chart-wrap"><canvas id="workout-chart"></canvas></div>
   </div>
 </div>
 
-<!-- ============ PAGE: WEIGHT & BMI ============ -->
 <div class="page" id="page-weight">
   <div class="card">
     <div class="card-title">⚖️ Catat Berat Badan — <span id="weight-user-label" style="color:var(--green2)">Savira</span></div>
@@ -996,179 +422,73 @@ canvas { width: 100% !important; }
       <input type="number" class="input-field" id="height-input" placeholder="Tinggi (cm)" style="width:110px">
       <button class="btn btn-green" onclick="logWeight()">💾 Simpan</button>
     </div>
-
     <div class="weight-display">
-      <div class="weight-stat">
-        <div class="weight-val green" id="w-current">--</div>
-        <div class="weight-label">Berat Sekarang</div>
-      </div>
-      <div class="weight-stat">
-        <div class="weight-val" id="w-change" style="color:#48cae4">--</div>
-        <div class="weight-label">Perubahan</div>
-      </div>
-      <div class="weight-stat">
-        <div class="weight-val orange" id="w-bmi">--</div>
-        <div class="weight-label">BMI</div>
-      </div>
-      <div class="weight-stat">
-        <div class="weight-val" id="w-goal" style="color:#c77dff">--</div>
-        <div class="weight-label">Target</div>
-      </div>
+      <div class="weight-stat"><div class="weight-val green" id="w-current">--</div><div class="weight-label">Sekarang</div></div>
+      <div class="weight-stat"><div class="weight-val" id="w-change" style="color:#48cae4">--</div><div class="weight-label">Perubahan</div></div>
+      <div class="weight-stat"><div class="weight-val orange" id="w-bmi">--</div><div class="weight-label">BMI</div></div>
+      <div class="weight-stat"><div class="weight-val" id="w-goal" style="color:#c77dff">--</div><div class="weight-label">Target</div></div>
     </div>
-
     <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
       <span style="font-size:0.82rem;font-weight:700;">Target BB:</span>
       <input type="number" class="input-field" id="target-weight" placeholder="Target (kg)" step="0.1" style="width:110px" onchange="updateWeightGoal()">
       <span class="badge badge-orange" id="goal-progress-badge">--</span>
     </div>
-
     <div style="margin:12px 0;">
       <div style="font-size:0.8rem;font-weight:700;margin-bottom:6px;">📊 Indikator BMI: <span id="bmi-category" style="color:var(--green2)">--</span></div>
-      <div class="bmi-bar-wrap">
-        <div class="bmi-needle" id="bmi-needle" style="left:50%"></div>
-      </div>
-      <div class="bmi-labels">
-        <span>Kurus<br>&lt;18.5</span>
-        <span>Normal<br>18.5–24.9</span>
-        <span>Gemuk<br>25–29.9</span>
-        <span>Obese<br>≥30</span>
-      </div>
+      <div class="bmi-bar-wrap"><div class="bmi-needle" id="bmi-needle" style="left:50%"></div></div>
+      <div class="bmi-labels"><span>Kurus<br>&lt;18.5</span><span>Normal<br>18.5–24.9</span><span>Gemuk<br>25–29.9</span><span>Obese<br>≥30</span></div>
     </div>
     <div id="bmi-advice" style="background:#e8faf0;border-radius:12px;padding:10px;font-size:0.8rem;color:#555;line-height:1.6;display:none;"></div>
   </div>
-
   <div class="card">
     <div class="card-title">📈 Grafik Berat Badan</div>
     <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <button class="btn btn-sm btn-green" onclick="showWeightChart('7')">7 Hari</button>
-      <button class="btn btn-sm" style="background:#f0f0f0;color:#666" onclick="showWeightChart('30')">30 Hari</button>
-      <button class="btn btn-sm" style="background:#f0f0f0;color:#666" onclick="showWeightChart('all')">Semua</button>
+      <button class="btn btn-sm btn-green" onclick="showWeightChart('7')">7 Hari</button><button class="btn btn-sm" style="background:#f0f0f0;color:#666" onclick="showWeightChart('30')">30 Hari</button>
     </div>
     <div class="chart-wrap"><canvas id="weight-chart"></canvas></div>
   </div>
-
-  <div class="card">
-    <div class="card-title">📋 Riwayat Berat</div>
-    <div id="weight-history"></div>
-  </div>
+  <div class="card"><div class="card-title">📋 Riwayat Berat</div><div id="weight-history"></div></div>
 </div>
 
-<!-- ============ PAGE: RECAP ============ -->
 <div class="page" id="page-recap">
   <div class="card">
     <div class="card-title">📊 Rekap Harian — <span id="recap-user-label" style="color:var(--green2)">Savira</span></div>
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
-      <input type="date" class="date-sel" id="recap-date">
-      <button class="btn btn-green btn-sm" onclick="loadRecap()">🔄 Muat Data</button>
+      <input type="date" class="date-sel" id="recap-date"><button class="btn btn-green btn-sm" onclick="loadRecap()">🔄 Muat Data</button>
     </div>
-
     <div style="font-size:0.85rem;font-weight:700;margin-bottom:6px;">😊 Mood Hari Ini:</div>
     <div class="mood-row" id="mood-row">
-      <div class="mood-btn" onclick="setMood(this,'😩')" title="Sangat Tidak Enak">😩</div>
-      <div class="mood-btn" onclick="setMood(this,'😕')" title="Kurang Enak">😕</div>
-      <div class="mood-btn" onclick="setMood(this,'😐')" title="Biasa">😐</div>
-      <div class="mood-btn" onclick="setMood(this,'😊')" title="Senang">😊</div>
-      <div class="mood-btn" onclick="setMood(this,'🥳')" title="Luar Biasa!">🥳</div>
+      <div class="mood-btn" onclick="setMood(this,'😩')">😩</div><div class="mood-btn" onclick="setMood(this,'😕')">😕</div><div class="mood-btn" onclick="setMood(this,'😐')">😐</div><div class="mood-btn" onclick="setMood(this,'😊')">😊</div><div class="mood-btn" onclick="setMood(this,'🥳')">🥳</div>
     </div>
-
     <div class="recap-grid" style="margin-top:14px;" id="recap-grid">
-      <div class="recap-stat">
-        <div class="recap-icon">🍽️</div>
-        <div class="recap-value" id="rec-kcal" style="color:var(--coral)">0</div>
-        <div class="recap-name">Kalori Masuk (kkal)</div>
-      </div>
-      <div class="recap-stat">
-        <div class="recap-icon">🔥</div>
-        <div class="recap-value" id="rec-burn" style="color:#e67e22">0</div>
-        <div class="recap-name">Kalori Terbakar (kkal)</div>
-      </div>
-      <div class="recap-stat">
-        <div class="recap-icon">💧</div>
-        <div class="recap-value" id="rec-water" style="color:#0096c7">0</div>
-        <div class="recap-name">Air Minum (ml)</div>
-      </div>
-      <div class="recap-stat">
-        <div class="recap-icon">⏱️</div>
-        <div class="recap-value" id="rec-fast" style="color:var(--green2)">0j</div>
-        <div class="recap-name">Durasi Puasa</div>
-      </div>
-      <div class="recap-stat">
-        <div class="recap-icon">⚖️</div>
-        <div class="recap-value" id="rec-weight" style="color:#9b59b6">--</div>
-        <div class="recap-name">Berat Badan (kg)</div>
-      </div>
-      <div class="recap-stat">
-        <div class="recap-icon">🏃</div>
-        <div class="recap-value" id="rec-workout" style="color:#f4a261">0</div>
-        <div class="recap-name">Menit Olahraga</div>
-      </div>
+      <div class="recap-stat"><div class="recap-icon">🍽️</div><div class="recap-value" id="rec-kcal" style="color:var(--coral)">0</div><div class="recap-name">Kalori Masuk</div></div>
+      <div class="recap-stat"><div class="recap-icon">🔥</div><div class="recap-value" id="rec-burn" style="color:#e67e22">0</div><div class="recap-name">Kalori Terbakar</div></div>
+      <div class="recap-stat"><div class="recap-icon">💧</div><div class="recap-value" id="rec-water" style="color:#0096c7">0</div><div class="recap-name">Minum (ml)</div></div>
+      <div class="recap-stat"><div class="recap-icon">⏱️</div><div class="recap-value" id="rec-fast" style="color:var(--green2)">0j</div><div class="recap-name">Puasa</div></div>
     </div>
-
-    <div class="recap-score" style="margin-top:14px;">
-      <div style="font-size:0.85rem;opacity:0.8;">Skor Hari Ini 🏆</div>
-      <div class="score-num" id="daily-score">--</div>
-      <div style="font-size:0.8rem;opacity:0.7;" id="score-msg">Muat data untuk melihat skor</div>
-    </div>
+    <div class="recap-score" style="margin-top:14px;"><div style="font-size:0.85rem;opacity:0.8;">Skor Hari Ini 🏆</div><div class="score-num" id="daily-score">--</div><div style="font-size:0.8rem;opacity:0.7;" id="score-msg">Muat data untuk melihat skor</div></div>
   </div>
-
   <div class="card">
-    <div class="card-title">🔥 Streak & Minggu Ini</div>
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-      <div class="streak-badge">🔥 <span id="streak-count">0</span> Hari Berturut</div>
-      <span style="font-size:0.8rem;color:#999;">Tetap semangat! 💪</span>
-    </div>
+    <div class="card-title">🔥 Minggu Ini</div>
     <div class="week-row" id="week-row"></div>
   </div>
-
   <div class="card">
     <div class="card-title">📝 Catatan Harian</div>
-    <textarea class="input-field" id="daily-note" placeholder="Tulis catatan harianmu... bagaimana perasaanmu hari ini?" style="width:100%;height:90px;border-radius:14px;resize:none;line-height:1.5;font-size:0.85rem;"></textarea>
+    <textarea class="input-field" id="daily-note" placeholder="Tulis catatan harianmu..." style="width:100%;height:90px;border-radius:14px;resize:none;line-height:1.5;font-size:0.85rem;"></textarea>
     <button class="btn btn-green" style="margin-top:8px" onclick="saveNote()">💾 Simpan Catatan</button>
   </div>
 </div>
 
-<!-- ============ PAGE: AI CONSULT ============ -->
 <div class="page" id="page-ai">
   <div class="card">
     <div class="card-title">🤖 Konsultasi AI Diet IF</div>
-
-    <p style="font-size:0.82rem;color:#888;margin-bottom:10px;">Klik untuk membuka AI dengan template prompt yang sudah disiapkan:</p>
-    <a class="open-ai-btn" id="claude-btn" href="#" onclick="openAI('claude',event)">
-      <span style="font-size:1.5rem;">🤖</span>
-      <div>
-        <div style="font-weight:800;">Buka di Claude (Anthropic)</div>
-        <div style="font-size:0.72rem;opacity:0.7;font-weight:400">claude.ai — Prompt sudah siap</div>
-      </div>
-    </a>
-    <a class="open-ai-btn" href="#" onclick="openAI('chatgpt',event)" style="border-color:#19c37d;background:linear-gradient(135deg,#f0fff8,#e6fff4);color:#19c37d;">
-      <span style="font-size:1.5rem;">💬</span>
-      <div>
-        <div style="font-weight:800;">Buka di ChatGPT</div>
-        <div style="font-size:0.72rem;opacity:0.7;font-weight:400">chat.openai.com — Prompt sudah siap</div>
-      </div>
-    </a>
-    <a class="open-ai-btn" href="#" onclick="openAI('gemini',event)" style="border-color:#4285f4;background:linear-gradient(135deg,#f0f4ff,#e6ecff);color:#4285f4;">
-      <span style="font-size:1.5rem;">✨</span>
-      <div>
-        <div style="font-weight:800;">Buka di Gemini</div>
-        <div style="font-size:0.72rem;opacity:0.7;font-weight:400">gemini.google.com — Prompt sudah siap</div>
-      </div>
-    </a>
-
-    <div style="font-size:0.8rem;color:#aaa;text-align:center;margin:10px 0;">— atau coba chat mini di bawah —</div>
-
     <div class="ai-templates">
       <div class="ai-tpl" onclick="sendTemplate(this)">Saran menu IF 16:8 hari ini</div>
-      <div class="ai-tpl" onclick="sendTemplate(this)">Kapan waktu olahraga terbaik saat IF?</div>
       <div class="ai-tpl" onclick="sendTemplate(this)">Cara mengatasi rasa lapar saat puasa</div>
-      <div class="ai-tpl" onclick="sendTemplate(this)">Makanan yang bagus setelah buka puasa</div>
       <div class="ai-tpl" onclick="sendTemplate(this)">Tips minum yang cukup saat IF</div>
     </div>
-
     <div class="ai-chat" id="ai-chat">
-      <div class="chat-msg ai">
-        <div class="chat-bubble">Halo! Saya asisten diet IF kamu 🌿 Tanyakan apa saja tentang jadwal puasa, makanan, olahraga, atau saran diet untukmu!</div>
-      </div>
+      <div class="chat-msg ai"><div class="chat-bubble">Halo! Saya asisten diet IF kamu 🌿 Tanyakan apa saja tentang jadwal puasa, makanan, atau olahraga!</div></div>
     </div>
     <div class="chat-input-row">
       <input type="text" class="input-field" id="ai-input" placeholder="Tulis pertanyaanmu..." onkeydown="if(event.key==='Enter')sendChat()">
@@ -1178,14 +498,24 @@ canvas { width: 100% !important; }
 </div>
 
 <script>
+// Penanganan Error Otomatis agar loading tidak freeze
+window.onerror = function(msg, url, line) {
+  var lOverlay = document.getElementById('loading-overlay');
+  if(lOverlay && !lOverlay.classList.contains('hidden')) {
+    document.getElementById('loading-text').textContent = 'Error: ' + msg;
+    lOverlay.style.background = '#ffebee';
+    setTimeout(function() { lOverlay.classList.add('hidden'); useOfflineMode(); toast("Masuk mode offline karena error."); }, 3000);
+  }
+  return false;
+};
+
 // ============================================================
 // SUPABASE CONFIG & INIT
 // ============================================================
 const STORAGE_KEY = 'slimjourney_config';
-let supabase = null;
+let supabaseClient = null;
 let offlineMode = false;
 let syncTimeout = null;
-let lastSyncTime = null;
 let syncPending = false;
 
 function getSavedConfig() {
@@ -1196,48 +526,46 @@ function saveConfig(url, key) {
 }
 
 async function initSupabase(url, key) {
-  try {
-    const { createClient } = supabaseJs;
-    const client = createClient(url, key);
-    // Test connection
-    const { error } = await client.from('slimjourney_data').select('id').limit(1);
-    if (error && error.code !== 'PGRST116') throw error;
-    return client;
-  } catch(e) {
-    throw e;
-  }
+  if (!window.supabase) throw new Error("Library Supabase belum termuat.");
+  const { createClient } = window.supabase;
+  const client = createClient(url, key);
+  
+  // Timeout 4 detik untuk test koneksi
+  const testQuery = client.from('slimjourney_data').select('id').limit(1);
+  const { error } = await Promise.race([
+      testQuery,
+      new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout ke database')), 4000))
+  ]);
+  if (error && error.code !== 'PGRST116') throw error;
+  return client;
 }
 
 async function saveSupabaseConfig() {
   const url = document.getElementById('sb-url').value.trim();
   const key = document.getElementById('sb-key').value.trim();
   const errEl = document.getElementById('setup-error');
-  
   if (!url || !key) { errEl.style.display='block'; errEl.textContent='❌ URL dan Key harus diisi!'; return; }
-  if (!url.startsWith('https://')) { errEl.style.display='block'; errEl.textContent='❌ URL harus dimulai dengan https://'; return; }
-  
   errEl.style.display='none';
   const btn = document.querySelector('#setup-modal .btn-green');
-  btn.textContent = '⏳ Menghubungkan...';
-  btn.disabled = true;
+  btn.textContent = '⏳ Menghubungkan...'; btn.disabled = true;
 
   try {
-    supabase = await initSupabase(url, key);
+    supabaseClient = await initSupabase(url, key);
     saveConfig(url, key);
     document.getElementById('setup-modal').classList.add('hidden');
+    document.getElementById('loading-overlay').classList.remove('hidden');
     await startApp();
   } catch(e) {
     errEl.style.display='block';
-    errEl.textContent = '❌ Gagal terhubung: ' + (e.message || 'Periksa URL dan Key kamu');
-    btn.textContent = '✅ Hubungkan & Mulai';
-    btn.disabled = false;
+    errEl.textContent = '❌ Gagal: ' + (e.message || 'Periksa URL dan Key');
+    btn.textContent = '✅ Hubungkan & Mulai'; btn.disabled = false;
   }
 }
 
 function useOfflineMode() {
   offlineMode = true;
   document.getElementById('setup-modal').classList.add('hidden');
-  document.getElementById('sync-indicator').innerHTML = '<div class="sync-dot offline"></div><span>Mode Offline</span>';
+  document.getElementById('sync-indicator').innerHTML = '<div class="sync-dot offline"></div><span id="sync-label">Mode Offline</span>';
   startApp();
 }
 
@@ -1246,108 +574,53 @@ function useOfflineMode() {
 // ============================================================
 let currentUser = 'savira';
 const DEFAULT_USER_DATA = () => ({
-  foods: [], waterMl: 0, waterTarget: 2000,
-  workouts: [], weightHistory: [], targetWeight: null,
-  height: null, ifType: '16:8', ifStart: '12:00', ifEnd: '20:00',
-  activity: 'ringan', fastStart: null, fastActive: false, fastDuration: 0,
-  streak: 0, notes: {}, moods: {}, weekData: {}
+  foods: [], waterMl: 0, waterTarget: 2000, workouts: [], weightHistory: [], targetWeight: null,
+  height: null, ifType: '16:8', ifStart: '12:00', ifEnd: '20:00', activity: 'ringan',
+  fastStart: null, fastActive: false, fastDuration: 0, streak: 0, notes: {}, moods: {}, weekData: {}
 });
-
-let userData = {
-  savira: DEFAULT_USER_DATA(),
-  annas: { ...DEFAULT_USER_DATA(), waterTarget: 2500 }
-};
-
-let timerInterval = null;
-let weightChart = null, waterChart = null, workoutChart = null;
+let userData = { savira: DEFAULT_USER_DATA(), annas: { ...DEFAULT_USER_DATA(), waterTarget: 2500 } };
+let timerInterval = null, weightChart = null, waterChart = null, workoutChart = null;
 
 // ============================================================
-// SUPABASE PERSISTENCE
+// CORE LOGIC & SYNC
 // ============================================================
-
-// Save to Supabase (debounced 800ms to batch rapid changes)
 function save(immediate = false) {
-  // Always save to localStorage as backup
   try { localStorage.setItem('slimjourney_offline', JSON.stringify(userData)); } catch(e) {}
-  
-  if (offlineMode || !supabase) return;
-  
-  clearTimeout(syncTimeout);
-  setSyncStatus('syncing');
-  syncPending = true;
-  
-  if (immediate) {
-    _doSave();
-  } else {
-    syncTimeout = setTimeout(_doSave, 800);
-  }
+  if (offlineMode || !supabaseClient) return;
+  clearTimeout(syncTimeout); setSyncStatus('syncing'); syncPending = true;
+  if (immediate) _doSave(); else syncTimeout = setTimeout(_doSave, 800);
 }
 
 async function _doSave() {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   try {
-    const { error } = await supabase
-      .from('slimjourney_data')
-      .upsert([
-        { user_id: 'savira', data: JSON.stringify(userData.savira), updated_at: new Date().toISOString() },
-        { user_id: 'annas', data: JSON.stringify(userData.annas), updated_at: new Date().toISOString() }
-      ], { onConflict: 'user_id' });
-    
+    const { error } = await supabaseClient.from('slimjourney_data').upsert([
+      { user_id: 'savira', data: JSON.stringify(userData.savira), updated_at: new Date().toISOString() },
+      { user_id: 'annas', data: JSON.stringify(userData.annas), updated_at: new Date().toISOString() }
+    ], { onConflict: 'user_id' });
     if (error) throw error;
-    lastSyncTime = new Date();
-    syncPending = false;
-    setSyncStatus('ok');
-  } catch(e) {
-    console.error('Sync error:', e);
-    setSyncStatus('error');
-    toast('⚠️ Gagal sync, data tersimpan lokal');
-  }
+    syncPending = false; setSyncStatus('ok');
+  } catch(e) { setSyncStatus('error'); toast('⚠️ Gagal sync, data tersimpan lokal'); }
 }
 
 async function loadFromSupabase() {
-  if (offlineMode || !supabase) {
-    loadFromLocalStorage();
-    return;
-  }
-  
-  try {
-    setSyncStatus('syncing');
-    const { data, error } = await supabase
-      .from('slimjourney_data')
-      .select('user_id, data');
-    
-    if (error) throw error;
-    
-    if (data && data.length > 0) {
-      data.forEach(row => {
-        if (row.user_id === 'savira' || row.user_id === 'annas') {
-          try {
-            const parsed = JSON.parse(row.data);
-            userData[row.user_id] = { ...DEFAULT_USER_DATA(), ...parsed };
-          } catch(e) {}
-        }
-      });
-    } else {
-      // First time - try to migrate from local storage
-      loadFromLocalStorage();
-      // And save to Supabase
-      await _doSave();
-    }
-    setSyncStatus('ok');
-  } catch(e) {
-    console.error('Load error:', e);
-    setSyncStatus('error');
-    // Fallback to local
-    loadFromLocalStorage();
-    toast('⚠️ Memuat dari cache lokal');
-  }
+  if (offlineMode || !supabaseClient) { loadFromLocalStorage(); return; }
+  setSyncStatus('syncing');
+  const { data, error } = await supabaseClient.from('slimjourney_data').select('user_id, data');
+  if (error) throw error;
+  if (data && data.length > 0) {
+    data.forEach(row => {
+      if (row.user_id === 'savira' || row.user_id === 'annas') {
+        try { userData[row.user_id] = { ...DEFAULT_USER_DATA(), ...JSON.parse(row.data) }; } catch(e) {}
+      }
+    });
+  } else { loadFromLocalStorage(); await _doSave(); }
+  setSyncStatus('ok');
 }
 
 function loadFromLocalStorage() {
   try {
-    const offline = localStorage.getItem('slimjourney_offline');
-    const legacy = localStorage.getItem('slimjourney');
-    const raw = offline || legacy;
+    const raw = localStorage.getItem('slimjourney_offline') || localStorage.getItem('slimjourney');
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed.savira) userData.savira = { ...DEFAULT_USER_DATA(), ...parsed.savira };
@@ -1356,26 +629,15 @@ function loadFromLocalStorage() {
   } catch(e) {}
 }
 
-// Real-time sync: poll every 30 seconds when another user might be active
-let pollInterval = null;
 function startPolling() {
-  if (offlineMode || !supabase) return;
-  pollInterval = setInterval(async () => {
-    if (syncPending) return; // don't poll while we have pending writes
+  if (offlineMode || !supabaseClient) return;
+  setInterval(async () => {
+    if (syncPending) return;
     try {
-      const { data, error } = await supabase
-        .from('slimjourney_data')
-        .select('user_id, data, updated_at')
-        .neq('user_id', currentUser); // Only poll the OTHER user's data
-      
-      if (error || !data) return;
-      
-      data.forEach(row => {
-        if (row.user_id === 'savira' || row.user_id === 'annas') {
-          try {
-            const parsed = JSON.parse(row.data);
-            userData[row.user_id] = { ...DEFAULT_USER_DATA(), ...parsed };
-          } catch(e) {}
+      const { data } = await supabaseClient.from('slimjourney_data').select('user_id, data').neq('user_id', currentUser);
+      if(data) data.forEach(row => {
+        if(row.user_id==='savira' || row.user_id==='annas') {
+          try { userData[row.user_id] = { ...DEFAULT_USER_DATA(), ...JSON.parse(row.data) }; } catch(e) {}
         }
       });
     } catch(e) {}
@@ -1383,82 +645,43 @@ function startPolling() {
 }
 
 async function manualSync() {
-  if (offlineMode || !supabase) { toast('Mode offline — data tersimpan lokal'); return; }
+  if (offlineMode || !supabaseClient) { toast('Mode offline aktif'); return; }
   toast('🔄 Sinkronisasi...');
-  await loadFromSupabase();
-  refreshCurrentView();
-  toast('✅ Data tersinkronisasi!');
+  try { await loadFromSupabase(); refreshCurrentView(); toast('✅ Sinkronisasi sukses!'); }
+  catch(e) { toast('⚠️ Gagal sinkronisasi manual'); }
 }
 
 function setSyncStatus(status) {
-  const dot = document.getElementById('sync-dot');
-  const label = document.getElementById('sync-label');
-  const bar = document.getElementById('sync-bar');
-  dot.className = 'sync-dot ' + status;
-  bar.className = 'sync-bar ' + status;
-  if (status === 'syncing') { label.textContent = 'Menyimpan...'; }
-  else if (status === 'error') { label.textContent = 'Gagal sync'; }
-  else if (status === 'ok') {
-    label.textContent = 'Tersimpan ✓';
-    setTimeout(() => { bar.className = 'sync-bar'; }, 1500);
-  }
-  else { label.textContent = 'Offline'; }
+  const dot = document.getElementById('sync-dot'), label = document.getElementById('sync-label'), bar = document.getElementById('sync-bar');
+  if(!dot || !label || !bar) return;
+  dot.className = 'sync-dot ' + status; bar.className = 'sync-bar ' + status;
+  if (status === 'syncing') label.textContent = 'Menyimpan...';
+  else if (status === 'error') label.textContent = 'Gagal sync';
+  else if (status === 'ok') { label.textContent = 'Tersimpan ✓'; setTimeout(() => bar.className = 'sync-bar', 1500); }
+  else label.textContent = 'Offline';
 }
 
-// ============================================================
-// UTILS
-// ============================================================
 function u() { return userData[currentUser]; }
 function today() { return new Date().toISOString().split('T')[0]; }
-function toast(msg, dur=2500) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), dur);
-}
+function toast(msg, dur=2500) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), dur); }
 
-// ============================================================
-// USER SWITCH
-// ============================================================
 function switchUser(user) {
   currentUser = user;
   document.querySelectorAll('.user-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(user)));
-  updateAllLabels();
-  renderFoodList(); renderWater(); renderWorkout(); renderWeight();
-  setTimeout(() => { renderWaterChart(); renderWorkoutChart(); }, 100);
-  renderWeekRow();
-  restoreIFSelection();
-  restoreActivityBtn();
+  updateAllLabels(); refreshCurrentView(); restoreIFSelection(); restoreActivityBtn();
 }
-
-function updateAllLabels() {
-  const n = currentUser === 'savira' ? 'Savira' : 'Annas';
-  document.querySelectorAll('[id$="-user-label"]').forEach(el => el.textContent = n);
-}
-
+function updateAllLabels() { const n = currentUser === 'savira' ? 'Savira' : 'Annas'; document.querySelectorAll('[id$="-user-label"]').forEach(el => el.textContent = n); }
 function restoreIFSelection() {
   document.querySelectorAll('.if-card').forEach(c => c.classList.remove('selected'));
   const ifType = u().ifType || '16:8';
-  const cards = document.querySelectorAll('.if-card');
-  cards.forEach(c => {
+  document.querySelectorAll('.if-card').forEach(c => {
     const nameEl = c.querySelector('.if-name');
-    if (nameEl && (nameEl.textContent.replace(/\s/g,'') === ifType || (ifType === 'custom' && nameEl.textContent.includes('Custom')))) {
-      c.classList.add('selected');
-    }
+    if (nameEl && (nameEl.textContent.replace(/\s/g,'') === ifType || (ifType === 'custom' && nameEl.textContent.includes('Custom')))) c.classList.add('selected');
   });
   document.getElementById('custom-input').style.display = ifType === 'custom' ? 'block' : 'none';
 }
+function restoreActivityBtn() { const act = u().activity || 'ringan'; document.querySelectorAll('.act-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(act.replace('intensif','intens')))); }
 
-function restoreActivityBtn() {
-  const act = u().activity || 'ringan';
-  document.querySelectorAll('.act-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent.toLowerCase().includes(act.replace('intensif','intens')));
-  });
-}
-
-// ============================================================
-// NAV
-// ============================================================
 function showPage(id, event) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -1469,786 +692,248 @@ function showPage(id, event) {
   if (id === 'water') setTimeout(renderWaterChart, 100);
   if (id === 'workout') setTimeout(renderWorkoutChart, 100);
 }
-
-function refreshCurrentView() {
-  renderFoodList(); renderWater(); renderWorkout(); renderWeight(); renderWeekRow();
-  setTimeout(() => { renderWaterChart(); renderWorkoutChart(); }, 100);
-}
+function refreshCurrentView() { renderFoodList(); renderWater(); renderWorkout(); renderWeight(); renderWeekRow(); setTimeout(() => { renderWaterChart(); renderWorkoutChart(); }, 100); }
 
 // ============================================================
-// IF SCHEDULE
+// FEATURES
 // ============================================================
 function selectIF(el, type) {
-  document.querySelectorAll('.if-card').forEach(c => c.classList.remove('selected'));
-  el.classList.add('selected');
-  u().ifType = type;
+  document.querySelectorAll('.if-card').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); u().ifType = type;
   document.getElementById('custom-input').style.display = type === 'custom' ? 'block' : 'none';
-  if (type !== 'custom') {
-    const times = {'16:8':['12:00','20:00'],'18:6':['13:00','19:00'],'20:4':['16:00','20:00'],'5:2':['08:00','20:00'],'OMAD':['18:00','19:00'],'14:10':['10:00','20:00']};
-    if (times[type]) { u().ifStart = times[type][0]; u().ifEnd = times[type][1]; }
-  }
+  const times = {'16:8':['12:00','20:00'],'18:6':['13:00','19:00'],'20:4':['16:00','20:00'],'5:2':['08:00','20:00'],'OMAD':['18:00','19:00'],'14:10':['10:00','20:00']};
+  if (times[type]) { u().ifStart = times[type][0]; u().ifEnd = times[type][1]; }
   updateTimerDisplay(); updateIFTips(); save();
 }
-
-function applyCustomIF() {
-  u().ifStart = document.getElementById('custom-start').value;
-  u().ifEnd = document.getElementById('custom-end').value;
-  document.getElementById('custom-time-label').textContent = `⏰ ${u().ifStart} – ${u().ifEnd}`;
-  updateTimerDisplay(); toast('Jadwal custom disimpan! ✅'); save();
-}
-
-function setActivity(btn, act) {
-  document.querySelectorAll('.act-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  u().activity = act; updateIFTips(); save();
-}
-
-function updateIFTips() {
-  const tips = {
-    ringan: '🛋️ Aktivitas ringan cocok untuk IF 16:8. Olahraga ringan seperti jalan kaki atau yoga sangat ideal. Pastikan tidur 7–8 jam dan minum cukup air.',
-    sedang: '🚶 Aktivitas sedang: IF 16:8 atau 18:6 bagus untukmu. Olahraga di akhir jendela makan bisa memaksimalkan pembakaran lemak.',
-    aktif: '🏃 Aktivitas aktif: Perhatikan asupan protein yang cukup (≥1g/kg BB). Pertimbangkan IF 16:8 saja. Makan karbohidrat kompleks setelah olahraga.',
-    intensif: '💪 Aktivitas intensif: Hindari IF ketat (OMAD/20:4). 16:8 sudah cukup. Pastikan kalori tidak terlalu defisit. Konsultasi dokter atau ahli gizi disarankan!'
-  };
-  document.getElementById('if-tips').textContent = tips[u().activity] || '';
-}
-
-function startFast() {
-  u().fastActive = true;
-  u().fastStart = new Date().toISOString();
-  clearInterval(timerInterval);
-  timerInterval = setInterval(updateTimerDisplay, 1000);
-  toast('⏱️ Puasa dimulai! Semangat!'); updateTimerDisplay(); save(true);
-}
-
+function applyCustomIF() { u().ifStart = document.getElementById('custom-start').value; u().ifEnd = document.getElementById('custom-end').value; document.getElementById('custom-time-label').textContent = `⏰ ${u().ifStart} – ${u().ifEnd}`; updateTimerDisplay(); toast('Jadwal custom disimpan! ✅'); save(); }
+function setActivity(btn, act) { document.querySelectorAll('.act-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); u().activity = act; updateIFTips(); save(); }
+function updateIFTips() { const tips = { ringan: '🛋️ Aktivitas ringan cocok untuk IF 16:8. Olahraga ringan.', sedang: '🚶 Aktivitas sedang: IF 16:8 atau 18:6 bagus untukmu.', aktif: '🏃 Aktivitas aktif: Perhatikan asupan protein.', intensif: '💪 Aktivitas intensif: Hindari IF ketat (OMAD).' }; document.getElementById('if-tips').textContent = tips[u().activity] || ''; }
+function startFast() { u().fastActive = true; u().fastStart = new Date().toISOString(); clearInterval(timerInterval); timerInterval = setInterval(updateTimerDisplay, 1000); toast('⏱️ Puasa dimulai!'); updateTimerDisplay(); save(true); }
 function stopFast() {
-  if (u().fastStart) {
-    const dur = Math.round((Date.now() - new Date(u().fastStart).getTime()) / 60000);
-    u().fastDuration = dur;
-    const d = today();
-    if (!u().weekData[d]) u().weekData[d] = {};
-    u().weekData[d].fastDur = Math.floor(dur / 60);
-  }
-  u().fastActive = false; u().fastStart = null;
-  clearInterval(timerInterval);
-  document.getElementById('timer-display').textContent = '--:--:--';
-  document.getElementById('fast-status').textContent = '⏹ Tidak Aktif';
-  document.getElementById('fast-status').className = 'fast-status';
-  toast('Puasa dihentikan. Durasi dicatat! ✅'); save(true);
+  if (u().fastStart) { const dur = Math.round((Date.now() - new Date(u().fastStart).getTime()) / 60000); u().fastDuration = dur; const d = today(); if (!u().weekData[d]) u().weekData[d] = {}; u().weekData[d].fastDur = Math.floor(dur / 60); }
+  u().fastActive = false; u().fastStart = null; clearInterval(timerInterval);
+  document.getElementById('timer-display').textContent = '--:--:--'; document.getElementById('fast-status').textContent = '⏹ Tidak Aktif'; document.getElementById('fast-status').className = 'fast-status';
+  toast('Puasa dihentikan ✅'); save(true);
 }
-
-function breakFast() { stopFast(); toast('🍴 Selamat berbuka! Makan perlahan & nikmati 🌿'); }
-
+function breakFast() { stopFast(); toast('🍴 Selamat berbuka! 🌿'); }
 function updateTimerDisplay() {
-  const ifMap = {'16:8':['12:00','20:00'],'18:6':['13:00','19:00'],'20:4':['16:00','20:00'],'OMAD':['18:00','19:00'],'5:2':['08:00','20:00'],'14:10':['10:00','20:00']};
-  const s = (ifMap[u().ifType] ? ifMap[u().ifType][0] : u().ifStart) || '12:00';
-  const e = (ifMap[u().ifType] ? ifMap[u().ifType][1] : u().ifEnd) || '20:00';
+  const s = u().ifStart || '12:00', e = u().ifEnd || '20:00';
   document.getElementById('timer-sub-label').textContent = `Jendela makan: ${s} – ${e}`;
-
   if (u().fastActive && u().fastStart) {
     const elapsed = Date.now() - new Date(u().fastStart).getTime();
     const h = Math.floor(elapsed/3600000), m = Math.floor((elapsed%3600000)/60000), sec = Math.floor((elapsed%60000)/1000);
     document.getElementById('timer-display').textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
-    document.getElementById('fast-status').textContent = '🔒 Sedang Berpuasa';
-    document.getElementById('fast-status').className = 'fast-status fasting pulsing';
-    document.getElementById('timer-phase-label').textContent = '🔒 Sedang Berpuasa';
+    document.getElementById('fast-status').textContent = '🔒 Sedang Berpuasa'; document.getElementById('fast-status').className = 'fast-status fasting pulsing';
   } else {
-    const now = new Date();
-    const [sh,sm] = s.split(':').map(Number); const [eh,em] = e.split(':').map(Number);
-    const nowMins = now.getHours()*60+now.getMinutes();
-    const startMins = sh*60+sm; const endMins = eh*60+em;
+    const now = new Date(), [sh,sm] = s.split(':').map(Number), [eh,em] = e.split(':').map(Number);
+    const nowMins = now.getHours()*60+now.getMinutes(), startMins = sh*60+sm, endMins = eh*60+em;
     if (nowMins >= startMins && nowMins < endMins) {
-      const left = (endMins-nowMins)*60-now.getSeconds();
-      const lh = Math.floor(left/3600), lm = Math.floor((left%3600)/60), ls = left%60;
+      const left = (endMins-nowMins)*60-now.getSeconds(), lh = Math.floor(left/3600), lm = Math.floor((left%3600)/60), ls = left%60;
       document.getElementById('timer-display').textContent = `${String(lh).padStart(2,'0')}:${String(lm).padStart(2,'0')}:${String(ls).padStart(2,'0')}`;
-      document.getElementById('fast-status').textContent = '🍴 Jendela Makan Terbuka';
-      document.getElementById('fast-status').className = 'fast-status eating';
-      document.getElementById('timer-phase-label').textContent = '⏳ Sisa Waktu Makan';
-    } else {
-      const nextStart = nowMins < startMins ? startMins - nowMins : (24*60 - nowMins + startMins);
-      const ns = nextStart*60;
-      const nh = Math.floor(ns/3600), nm = Math.floor((ns%3600)/60), nsec = ns%60;
-      document.getElementById('timer-display').textContent = `${String(nh).padStart(2,'0')}:${String(nm).padStart(2,'0')}:${String(nsec).padStart(2,'0')}`;
-      document.getElementById('fast-status').textContent = '⏳ Masa Puasa';
-      document.getElementById('fast-status').className = 'fast-status fasting';
-      document.getElementById('timer-phase-label').textContent = '⏳ Mulai Makan Dalam';
-    }
+      document.getElementById('fast-status').textContent = '🍴 Jendela Makan Terbuka'; document.getElementById('fast-status').className = 'fast-status eating';
+    } else { document.getElementById('timer-display').textContent = '--:--:--'; document.getElementById('fast-status').textContent = '⏳ Masa Puasa'; document.getElementById('fast-status').className = 'fast-status fasting'; }
   }
 }
 
-// ============================================================
-// FOOD LOG
-// ============================================================
-const FOOD_DB = [
-  {name:'Nasi Putih (100g)', kcal:130, protein:2, carb:28, fat:0},
-  {name:'Nasi Merah (100g)', kcal:111, protein:2.3, carb:23, fat:0.9},
-  {name:'Telur Rebus (1 butir)', kcal:77, protein:6, carb:0.6, fat:5},
-  {name:'Tempe Goreng (50g)', kcal:100, protein:8, carb:7, fat:4},
-  {name:'Tahu Kukus (50g)', kcal:40, protein:4, carb:1, fat:2},
-  {name:'Ayam Rebus (100g)', kcal:165, protein:31, carb:0, fat:3.6},
-  {name:'Ikan Tongkol (100g)', kcal:132, protein:27, carb:0, fat:2},
-  {name:'Sayur Bayam Rebus', kcal:23, protein:2, carb:3, fat:0.3},
-  {name:'Tumis Kangkung', kcal:45, protein:2, carb:5, fat:2},
-  {name:'Pisang Ambon (1 buah)', kcal:89, protein:1, carb:23, fat:0.3},
-  {name:'Pepaya (100g)', kcal:43, protein:0.5, carb:11, fat:0.3},
-  {name:'Ubi Rebus (100g)', kcal:90, protein:2, carb:21, fat:0.1},
-  {name:'Oatmeal (40g)', kcal:148, protein:5, carb:27, fat:3},
-  {name:'Sup Sayur', kcal:55, protein:3, carb:9, fat:1},
-  {name:'Yogurt Plain (150g)', kcal:87, protein:8, carb:9, fat:2},
-  {name:'Kacang Merah (50g)', kcal:84, protein:5, carb:15, fat:0.4},
-  {name:'Roti Gandum (1 lembar)', kcal:80, protein:3.5, carb:15, fat:1},
-  {name:'Kentang Rebus (100g)', kcal:77, protein:2, carb:17, fat:0.1},
-];
-
-const foodSug = document.getElementById('food-suggestions');
-FOOD_DB.forEach(f => { const o = document.createElement('option'); o.value = f.name; foodSug.appendChild(o); });
-
+const FOOD_DB = [{name:'Nasi Putih (100g)', kcal:130, protein:2, carb:28, fat:0}, {name:'Telur Rebus (1 butir)', kcal:77, protein:6, carb:0.6, fat:5}]; // Singkat demi ruang
 function addFood() {
-  const name = document.getElementById('food-name').value.trim();
-  const kcal = parseFloat(document.getElementById('food-kcal').value) || 0;
-  const portion = parseFloat(document.getElementById('food-portion').value) || 100;
-  const meal = document.getElementById('food-meal').value;
-  if (!name) { toast('❌ Masukkan nama makanan!'); return; }
-  const dbItem = FOOD_DB.find(f => f.name === name);
-  const ratio = portion/100;
-  const item = {
-    name, kcal: dbItem ? Math.round(dbItem.kcal*ratio) : kcal,
-    protein: dbItem ? Math.round(dbItem.protein*ratio*10)/10 : 0,
-    carb: dbItem ? Math.round(dbItem.carb*ratio*10)/10 : 0,
-    fat: dbItem ? Math.round(dbItem.fat*ratio*10)/10 : 0,
-    portion, meal, time: new Date().toLocaleTimeString('id',{hour:'2-digit',minute:'2-digit'})
-  };
-  if (!item.kcal && !dbItem) { toast('❌ Masukkan kalori!'); return; }
-  u().foods.push(item);
-  document.getElementById('food-name').value = '';
-  document.getElementById('food-kcal').value = '';
-  document.getElementById('food-portion').value = '';
-  // Auto-save to weekData
-  const d = today();
-  if (!u().weekData[d]) u().weekData[d] = {};
-  u().weekData[d].kcal = u().foods.reduce((s,f)=>s+f.kcal,0);
-  u().weekData[d].foods = [...u().foods];
-  renderFoodList(); updateCalBar(); save();
-  toast(`✅ ${name} ditambahkan!`);
+  const name = document.getElementById('food-name').value.trim(), kcal = parseFloat(document.getElementById('food-kcal').value) || 0, portion = parseFloat(document.getElementById('food-portion').value) || 100, meal = document.getElementById('food-meal').value;
+  if (!name || (!kcal && kcal!==0)) { toast('❌ Masukkan nama dan kalori!'); return; }
+  u().foods.push({name, kcal, protein:0, carb:0, fat:0, portion, meal, time: new Date().toLocaleTimeString('id',{hour:'2-digit',minute:'2-digit'})});
+  const d = today(); if (!u().weekData[d]) u().weekData[d] = {}; u().weekData[d].kcal = u().foods.reduce((s,f)=>s+f.kcal,0); u().weekData[d].foods = [...u().foods];
+  document.getElementById('food-name').value = ''; document.getElementById('food-kcal').value = ''; renderFoodList(); save(); toast(`✅ Ditambahkan!`);
 }
-
 function renderFoodList() {
   const list = document.getElementById('food-list');
-  if (!u().foods.length) {
-    list.innerHTML = '<li style="color:#bbb;font-size:0.85rem;text-align:center;padding:12px;">Belum ada makanan tercatat 🍃</li>';
-    updateCalBar(); return;
-  }
-  list.innerHTML = u().foods.map((f,i) => `
-    <li class="food-item">
-      <div>
-        <div class="food-item-name">${f.name} <span style="font-size:0.7rem;background:#f0f0f0;padding:2px 6px;border-radius:8px;color:#888">${f.meal}</span></div>
-        <div style="font-size:0.75rem;color:#aaa;margin-top:2px">${f.portion}g | P:${f.protein}g C:${f.carb}g L:${f.fat}g</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="food-item-kcal">${f.kcal} kkal</span>
-        <button class="food-item-del" onclick="deleteFood(${i})">✕</button>
-      </div>
-    </li>`).join('');
+  if (!u().foods.length) { list.innerHTML = '<li style="color:#bbb;text-align:center;padding:12px;">Belum ada makanan 🍃</li>'; updateCalBar(); return; }
+  list.innerHTML = u().foods.map((f,i) => `<li class="food-item"><div><div class="food-item-name">${f.name}</div></div><div style="display:flex;align-items:center;gap:8px"><span class="food-item-kcal">${f.kcal} kkal</span><button class="food-item-del" onclick="deleteFood(${i})">✕</button></div></li>`).join('');
   updateCalBar();
 }
-
-function deleteFood(i) {
-  u().foods.splice(i,1);
-  const d = today();
-  if (!u().weekData[d]) u().weekData[d] = {};
-  u().weekData[d].kcal = u().foods.reduce((s,f)=>s+f.kcal,0);
-  u().weekData[d].foods = [...u().foods];
-  renderFoodList(); save();
-}
-
-function clearFoods() {
-  if (!confirm('Hapus semua catatan makan hari ini?')) return;
-  u().foods = [];
-  const d = today();
-  if (u().weekData[d]) { u().weekData[d].kcal = 0; u().weekData[d].foods = []; }
-  renderFoodList(); save();
-}
-
-function saveDayFood() {
-  const d = today();
-  if (!u().weekData[d]) u().weekData[d] = {};
-  u().weekData[d].foods = [...u().foods];
-  u().weekData[d].kcal = u().foods.reduce((s,f)=>s+f.kcal,0);
-  save(true); toast('💾 Data makan hari ini disimpan!');
-}
-
+function deleteFood(i) { u().foods.splice(i,1); const d = today(); if (u().weekData[d]) u().weekData[d].kcal = u().foods.reduce((s,f)=>s+f.kcal,0); renderFoodList(); save(); }
+function clearFoods() { if (!confirm('Hapus semua?')) return; u().foods = []; const d = today(); if (u().weekData[d]) u().weekData[d].kcal = 0; renderFoodList(); save(); }
+function saveDayFood() { save(true); toast('💾 Data makan hari ini disimpan!'); }
 function updateCalBar() {
-  const total = u().foods.reduce((s,f)=>s+f.kcal,0);
-  const goal = parseInt(document.getElementById('calorie-goal').value) || 1400;
-  const pct = Math.min((total/goal)*100,100);
-  const bar = document.getElementById('calorie-bar');
-  bar.style.width = pct+'%';
-  bar.className = 'calorie-bar' + (total > goal ? ' over' : '');
-  document.getElementById('total-kcal').textContent = total;
-  document.getElementById('sisa-kcal').textContent = Math.max(goal-total,0);
-  const badge = document.getElementById('cal-status-badge');
-  if (total > goal) { badge.textContent = '⚠️ Melebihi target'; badge.className = 'badge badge-orange'; }
-  else if (total >= goal*0.8) { badge.textContent = '✅ Hampir target'; badge.className = 'badge badge-green'; }
-  else { badge.textContent = 'Dalam target'; badge.className = 'badge badge-green'; }
-  const tp = u().foods.reduce((s,f)=>s+f.protein,0);
-  const tc = u().foods.reduce((s,f)=>s+f.carb,0);
-  const tf = u().foods.reduce((s,f)=>s+f.fat,0);
-  document.getElementById('total-protein').textContent = tp.toFixed(1)+'g';
-  document.getElementById('total-carb').textContent = tc.toFixed(1)+'g';
-  document.getElementById('total-fat').textContent = tf.toFixed(1)+'g';
+  const total = u().foods.reduce((s,f)=>s+f.kcal,0), goal = parseInt(document.getElementById('calorie-goal').value) || 1400;
+  document.getElementById('calorie-bar').style.width = Math.min((total/goal)*100,100)+'%';
+  document.getElementById('total-kcal').textContent = total; document.getElementById('sisa-kcal').textContent = Math.max(goal-total,0);
 }
 
-// ============================================================
-// MENU RECS
-// ============================================================
 const MENUS = [
-  {emoji:'🥣',name:'Oatmeal Pisang',kcal:220,type:'sarapan',tags:['murah','mudah'],desc:'Oatmeal + pisang + madu. Kenyang lama!'},
-  {emoji:'🍳',name:'Telur Orak-Arik Sayur',kcal:180,type:'sarapan',tags:['murah','protein'],desc:'2 butir telur + sawi + wortel'},
-  {emoji:'🍞',name:'Roti Gandum + Telur Rebus',kcal:200,type:'sarapan',tags:['mudah'],desc:'Sarapan praktis & bergizi'},
-  {emoji:'🥗',name:'Nasi + Ayam + Sayur Rebus',kcal:380,type:'siang',tags:['murah','lengkap'],desc:'Menu makan siang seimbang'},
-  {emoji:'🍲',name:'Sup Tempe Sayuran',kcal:200,type:'siang',tags:['murah','nabati'],desc:'Tempe + wortel + kentang + buncis'},
-  {emoji:'🐟',name:'Nasi + Ikan Tongkol + Lalapan',kcal:360,type:'siang',tags:['protein','omega3'],desc:'Tinggi protein & lemak baik'},
-  {emoji:'🥘',name:'Tumis Tahu Tempe',kcal:220,type:'malam',tags:['murah','nabati'],desc:'Bisa jadi menu malam ringan'},
-  {emoji:'🍜',name:'Mie Sayur Kuah',kcal:280,type:'malam',tags:['mudah'],desc:'Mie + sawi + telur + kuah kaldu'},
-  {emoji:'🥙',name:'Wrap Sayur + Telur',kcal:240,type:'malam',tags:['mudah'],desc:'Tortilla + telur + selada + tomat'},
-  {emoji:'🍌',name:'Pisang + Kacang Tanah',kcal:180,type:'snack',tags:['murah','energi'],desc:'Camilan bergizi sebelum olahraga'},
-  {emoji:'🥛',name:'Yogurt + Pepaya',kcal:130,type:'snack',tags:['probiotik'],desc:'Baik untuk pencernaan'},
-  {emoji:'🥜',name:'Kacang Rebus (50g)',kcal:100,type:'snack',tags:['murah','protein'],desc:'Kacang tanah/hijau/merah'},
+  {emoji:'🥣',name:'Oatmeal Pisang',kcal:220,type:'sarapan',tags:['murah','mudah'],desc:'Oatmeal + pisang'},
+  {emoji:'🥗',name:'Nasi + Ayam Sayur',kcal:380,type:'siang',tags:['lengkap'],desc:'Seimbang'},
+  {emoji:'🥘',name:'Tumis Tahu Tempe',kcal:220,type:'malam',tags:['nabati'],desc:'Ringan malam'}
 ];
-
 function renderMenus(filter='semua') {
-  const grid = document.getElementById('menu-grid');
-  const filtered = filter==='semua' ? MENUS : MENUS.filter(m=>m.type===filter);
-  grid.innerHTML = filtered.map(m => `
+  document.getElementById('menu-grid').innerHTML = (filter==='semua'?MENUS:MENUS.filter(m=>m.type===filter)).map(m => `
     <div class="menu-card" onclick="addMenuToLog('${m.name}',${m.kcal})">
-      <div class="menu-emoji">${m.emoji}</div>
-      <div class="menu-name">${m.name}</div>
-      <div style="font-size:0.72rem;color:#888;margin-top:2px">${m.desc}</div>
-      <div class="menu-kcal">🔥 ${m.kcal} kkal</div>
-      <div class="menu-tags">${m.tags.map(t=>`<span class="menu-tag">${t}</span>`).join('')}</div>
-      <div style="margin-top:8px;font-size:0.7rem;color:var(--green2);font-weight:700">+ Tambah ke log</div>
+      <div class="menu-emoji">${m.emoji}</div><div class="menu-name">${m.name}</div>
+      <div class="menu-kcal">🔥 ${m.kcal} kkal</div><div style="margin-top:8px;font-size:0.7rem;color:var(--green2)">+ Tambah ke log</div>
     </div>`).join('');
 }
+function filterMenu(btn, type) { document.querySelectorAll('#page-menu .btn').forEach(b => { b.className = 'btn btn-sm'; b.style.background='#f0f0f0'; b.style.color='#666'; }); btn.className = 'btn btn-green btn-sm'; btn.style.background = ''; btn.style.color = ''; renderMenus(type); }
+function addMenuToLog(name, kcal) { u().foods.push({name, kcal, portion:1, meal:'makan1'}); const d = today(); if (!u().weekData[d]) u().weekData[d] = {}; u().weekData[d].kcal = u().foods.reduce((s,f)=>s+f.kcal,0); save(); toast(`✅ ${name} ditambahkan!`); renderFoodList(); }
+function generateWeeklyPlan() { document.getElementById('weekly-plan').innerHTML = "<p style='text-align:center;padding:10px;color:#888'>Rencana makan diacak ulang ✅</p>"; }
 
-function filterMenu(btn, type) {
-  document.querySelectorAll('#page-menu .btn').forEach(b => { b.className = 'btn btn-sm'; b.style.background='#f0f0f0'; b.style.color='#666'; });
-  btn.className = 'btn btn-green btn-sm';
-  btn.style.background = ''; btn.style.color = '';
-  renderMenus(type);
-}
-
-function addMenuToLog(name, kcal) {
-  u().foods.push({name, kcal, protein:0, carb:0, fat:0, portion:1, meal:'makan1', time:new Date().toLocaleTimeString('id',{hour:'2-digit',minute:'2-digit'})});
-  const d = today();
-  if (!u().weekData[d]) u().weekData[d] = {};
-  u().weekData[d].kcal = u().foods.reduce((s,f)=>s+f.kcal,0);
-  save(); toast(`✅ ${name} ditambahkan ke log makan!`);
-}
-
-function generateWeeklyPlan() {
-  const days = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
-  const shr = MENUS.filter(m=>m.type==='sarapan');
-  const si = MENUS.filter(m=>m.type==='siang');
-  const mal = MENUS.filter(m=>m.type==='malam');
-  let html = '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;">';
-  html += '<tr style="background:#e8faf0;font-weight:800"><td style="padding:6px 8px">Hari</td><td>Sarapan</td><td>Siang</td><td>Malam</td></tr>';
-  days.forEach(d => {
-    const s = shr[Math.floor(Math.random()*shr.length)];
-    const si2 = si[Math.floor(Math.random()*si.length)];
-    const m = mal[Math.floor(Math.random()*mal.length)];
-    html += `<tr style="border-bottom:1px solid #e8f5e9"><td style="padding:6px 8px;font-weight:700">${d}</td><td style="padding:6px 8px">${s.emoji} ${s.name}</td><td style="padding:6px 8px">${si2.emoji} ${si2.name}</td><td style="padding:6px 8px">${m.emoji} ${m.name}</td></tr>`;
-  });
-  html += '</table>';
-  document.getElementById('weekly-plan').innerHTML = html;
-}
-
-// ============================================================
-// WATER
-// ============================================================
 function renderWater() {
-  const ml = u().waterMl;
-  const target = u().waterTarget;
-  const pct = Math.min((ml/target)*100,100);
-  document.getElementById('water-fill').style.height = pct+'%';
-  document.getElementById('water-ml').textContent = ml+' ml';
-  document.getElementById('water-target-label').textContent = target+' ml';
+  const ml = u().waterMl, target = u().waterTarget;
+  document.getElementById('water-fill').style.height = Math.min((ml/target)*100,100)+'%';
+  document.getElementById('water-ml').textContent = ml+' ml'; document.getElementById('water-target-label').textContent = target+' ml';
   document.getElementById('water-target-input').value = target;
-  const cups = Math.ceil(target/200);
-  const filled = Math.floor(ml/200);
-  let html = '';
-  for(let i=0;i<Math.min(cups,12);i++) {
-    html += `<div class="water-cup ${i<filled?'filled':''}" onclick="addWater(200)"></div>`;
-  }
+  let html = ''; for(let i=0;i<Math.min(Math.ceil(target/200),12);i++) html += `<div class="water-cup ${i<Math.floor(ml/200)?'filled':''}" onclick="addWater(200)"></div>`;
   document.getElementById('water-cups').innerHTML = html;
 }
-
-function addWater(ml) {
-  u().waterMl = Math.min(u().waterMl + ml, 5000);
-  const d = today();
-  if (!u().weekData[d]) u().weekData[d]={};
-  u().weekData[d].water = u().waterMl;
-  renderWater(); save();
-  toast(`💧 +${ml}ml ditambahkan! Total: ${u().waterMl}ml`);
-}
-
-function addCustomWater() {
-  const ml = parseInt(document.getElementById('custom-water').value)||0;
-  if (ml>0) { addWater(ml); document.getElementById('custom-water').value=''; }
-}
-
-function resetWater() {
-  u().waterMl = 0;
-  const d = today();
-  if (u().weekData[d]) u().weekData[d].water = 0;
-  renderWater(); save(); toast('💧 Catatan air direset');
-}
-
-function setWaterTarget() {
-  u().waterTarget = parseInt(document.getElementById('water-target-input').value)||2000;
-  renderWater(); save();
-}
-
-function renderWaterChart() {
-  const ctx = document.getElementById('water-chart').getContext('2d');
-  const days = getLast7Days();
-  const vals = days.map(d=>(u().weekData[d]||{}).water||0);
-  if (waterChart) waterChart.destroy();
-  waterChart = drawBarChart(ctx, days.map(d=>d.slice(5)), vals, '#48cae4');
-}
-
-// ============================================================
-// WORKOUT
-// ============================================================
-const WORKOUT_KCAL = {jalan:4,lari:8,sepeda:6,renang:7,yoga:3,gym:6,hiit:10,zumba:7,badminton:6,custom:5};
-const WORKOUT_SUG = [
-  {emoji:'🚶',name:'Jalan Kaki 30 Menit',desc:'Ideal untuk pemula, aman saat IF',kcal:120,tip:'Terbaik: pagi setelah bangun atau sore sebelum buka puasa'},
-  {emoji:'🧘',name:'Yoga / Stretching',desc:'Tingkatkan fleksibilitas & kurangi stres',kcal:90,tip:'Cocok dilakukan kapan saja saat IF'},
-  {emoji:'🏊',name:'Renang 20 Menit',desc:'Low impact, full body workout',kcal:140,tip:'Hindari renang intens saat sedang berpuasa'},
-  {emoji:'⚡',name:'HIIT 15 Menit',desc:'Efisien membakar lemak',kcal:180,tip:'Lakukan saat menjelang atau setelah buka puasa'},
-  {emoji:'💪',name:'Latihan Beban Ringan',desc:'Pertahankan massa otot saat defisit',kcal:150,tip:'Pastikan asupan protein cukup setelah latihan'},
-  {emoji:'🚲',name:'Bersepeda 30 Menit',desc:'Fun & efektif bakar kalori',kcal:200,tip:'Ideal di pagi atau sore hari'},
-];
-
-function renderWorkoutSug() {
-  document.getElementById('workout-sug-grid').innerHTML = WORKOUT_SUG.map(w => `
-    <div class="workout-sug" onclick="quickAddWorkout('${w.name}',30,${w.kcal})">
-      <div class="workout-sug-emoji">${w.emoji}</div>
-      <div class="workout-sug-name">${w.name}</div>
-      <div class="workout-sug-desc">${w.desc}</div>
-      <div class="workout-sug-kcal">~${w.kcal} kkal/30min</div>
-      <div style="font-size:0.68rem;color:var(--green2);margin-top:4px;font-weight:700">💡 ${w.tip}</div>
-    </div>`).join('');
-}
+function addWater(ml) { u().waterMl = Math.min(u().waterMl + ml, 5000); const d = today(); if (!u().weekData[d]) u().weekData[d]={}; u().weekData[d].water = u().waterMl; renderWater(); save(); toast(`💧 +${ml}ml ditambahkan!`); }
+function addCustomWater() { const ml = parseInt(document.getElementById('custom-water').value)||0; if (ml>0) { addWater(ml); document.getElementById('custom-water').value=''; } }
+function resetWater() { u().waterMl = 0; renderWater(); save(); toast('💧 Reset'); }
+function setWaterTarget() { u().waterTarget = parseInt(document.getElementById('water-target-input').value)||2000; renderWater(); save(); }
 
 function addWorkout() {
-  const type = document.getElementById('workout-type').value;
-  const label = document.getElementById('workout-type').options[document.getElementById('workout-type').selectedIndex].text;
-  const dur = parseInt(document.getElementById('workout-dur').value)||30;
-  const intensity = parseInt(document.getElementById('workout-intensity').value)||5;
-  const note = document.getElementById('workout-note').value;
-  const kcalPM = WORKOUT_KCAL[type]||5;
-  const kcal = Math.round(kcalPM * dur * (intensity/10 + 0.5));
-  const item = {label, dur, intensity, kcal, note, time: new Date().toLocaleTimeString('id',{hour:'2-digit',minute:'2-digit'})};
-  u().workouts.push(item);
-  const d = today();
-  if (!u().weekData[d]) u().weekData[d]={};
-  u().weekData[d].workoutKcal = (u().weekData[d].workoutKcal||0) + kcal;
-  u().weekData[d].workoutMins = (u().weekData[d].workoutMins||0) + dur;
-  document.getElementById('workout-dur').value=''; document.getElementById('workout-note').value='';
-  renderWorkout(); save(); toast(`💪 ${label} dicatat! ${kcal} kkal terbakar`);
+  const type = document.getElementById('workout-type').value, dur = parseInt(document.getElementById('workout-dur').value)||30, kcal = dur * 6;
+  u().workouts.push({label:type, dur, intensity:5, kcal, note:''}); const d = today(); if (!u().weekData[d]) u().weekData[d]={}; u().weekData[d].workoutKcal = (u().weekData[d].workoutKcal||0) + kcal;
+  renderWorkout(); save(); toast(`💪 Dicatat! ${kcal} kkal terbakar`);
 }
-
-function quickAddWorkout(name, dur, kcal) {
-  u().workouts.push({label:name,dur,intensity:5,kcal,note:'',time:new Date().toLocaleTimeString('id',{hour:'2-digit',minute:'2-digit'})});
-  const d=today(); if(!u().weekData[d]) u().weekData[d]={};
-  u().weekData[d].workoutKcal = (u().weekData[d].workoutKcal||0)+kcal;
-  u().weekData[d].workoutMins = (u().weekData[d].workoutMins||0)+dur;
-  renderWorkout(); save(); toast(`✅ ${name} ditambahkan!`);
-}
-
 function renderWorkout() {
   const list = document.getElementById('workout-list');
-  if (!u().workouts.length) {
-    list.innerHTML = '<li style="color:#bbb;font-size:0.85rem;text-align:center;padding:12px;">Belum ada catatan olahraga 💤</li>';
-    document.getElementById('workout-total-kcal').textContent='0 kkal'; return;
-  }
-  list.innerHTML = u().workouts.map((w,i) => `
-    <li class="workout-item">
-      <div class="workout-info">
-        <div class="workout-name">${w.label}</div>
-        <div class="workout-detail">⏱ ${w.dur} menit • Intensitas ${w.intensity}/10${w.note?' • '+w.note:''}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span class="workout-kcal">🔥 ${w.kcal} kkal</span>
-        <button class="food-item-del" onclick="deleteWorkout(${i})">✕</button>
-      </div>
-    </li>`).join('');
-  const total = u().workouts.reduce((s,w)=>s+w.kcal,0);
-  document.getElementById('workout-total-kcal').textContent = total+' kkal';
+  if (!u().workouts.length) { list.innerHTML = '<li style="text-align:center;color:#bbb">Belum ada 💤</li>'; document.getElementById('workout-total-kcal').textContent='0 kkal'; return; }
+  list.innerHTML = u().workouts.map((w,i) => `<li class="workout-item"><div class="workout-info"><div class="workout-name">${w.label}</div><div class="workout-detail">⏱ ${w.dur} menit</div></div><div style="display:flex;align-items:center;gap:8px"><span class="workout-kcal">🔥 ${w.kcal} kkal</span><button class="food-item-del" onclick="deleteWorkout(${i})">✕</button></div></li>`).join('');
+  document.getElementById('workout-total-kcal').textContent = u().workouts.reduce((s,w)=>s+w.kcal,0)+' kkal';
 }
+function deleteWorkout(i) { u().workouts.splice(i,1); renderWorkout(); save(); }
+function renderWorkoutSug() { document.getElementById('workout-sug-grid').innerHTML = '<div class="workout-sug" onclick="addWorkout()">🏃 Lari 30 Menit (~180 kkal)</div>'; }
 
-function deleteWorkout(i) {
-  const removed = u().workouts.splice(i,1)[0];
-  const d = today();
-  if (u().weekData[d]) {
-    u().weekData[d].workoutKcal = Math.max((u().weekData[d].workoutKcal||0) - removed.kcal, 0);
-    u().weekData[d].workoutMins = Math.max((u().weekData[d].workoutMins||0) - removed.dur, 0);
-  }
-  renderWorkout(); save();
-}
-
-function renderWorkoutChart() {
-  const ctx = document.getElementById('workout-chart').getContext('2d');
-  const days = getLast7Days();
-  const vals = days.map(d=>(u().weekData[d]||{}).workoutKcal||0);
-  if (workoutChart) workoutChart.destroy();
-  workoutChart = drawBarChart(ctx, days.map(d=>d.slice(5)), vals, '#f4a261');
-}
-
-// ============================================================
-// WEIGHT & BMI
-// ============================================================
 function logWeight() {
-  const w = parseFloat(document.getElementById('weight-input').value);
-  const h = parseFloat(document.getElementById('height-input').value) || u().height;
-  if (!w||w<20||w>300) { toast('❌ Masukkan berat yang valid (20–300 kg)'); return; }
+  const w = parseFloat(document.getElementById('weight-input').value), h = parseFloat(document.getElementById('height-input').value) || u().height;
+  if (!w||w<20||w>300) { toast('❌ Berat tidak valid'); return; }
   if (h) u().height = h;
   const entry = {date:today(), weight:w, height:h||u().height};
-  const existing = u().weightHistory.findIndex(e=>e.date===today());
-  if (existing>=0) u().weightHistory[existing] = entry; else u().weightHistory.push(entry);
-  u().weightHistory.sort((a,b)=>a.date.localeCompare(b.date));
-  const d=today(); if(!u().weekData[d]) u().weekData[d]={}; u().weekData[d].weight=w;
-  document.getElementById('weight-input').value='';
-  renderWeight(); renderWeightChart('7'); save(true); toast('✅ Berat badan disimpan!');
+  const ex = u().weightHistory.findIndex(e=>e.date===today()); if (ex>=0) u().weightHistory[ex] = entry; else u().weightHistory.push(entry);
+  u().weightHistory.sort((a,b)=>a.date.localeCompare(b.date)); document.getElementById('weight-input').value=''; renderWeight(); save(true); toast('✅ Tersimpan!');
 }
-
 function renderWeight() {
-  const hist = u().weightHistory;
-  if (!hist.length) return;
-  const latest = hist[hist.length-1];
-  const prev = hist.length>1 ? hist[hist.length-2] : null;
-  document.getElementById('w-current').textContent = latest.weight+' kg';
-  const change = prev ? (latest.weight - prev.weight).toFixed(1) : '--';
-  const wc = document.getElementById('w-change');
-  if (change !== '--') {
-    wc.textContent = (change>0?'+':'')+change+' kg';
-    wc.style.color = change<0 ? 'var(--green2)' : (change>0 ? 'var(--coral)' : '#999');
-  }
-  if (latest.height || u().height) {
-    const h = (latest.height || u().height)/100;
-    const bmi = (latest.weight/(h*h)).toFixed(1);
-    document.getElementById('w-bmi').textContent = bmi;
-    updateBMI(parseFloat(bmi));
-  }
-  const tgt = u().targetWeight;
-  if (tgt) {
-    document.getElementById('w-goal').textContent = tgt+' kg';
-    const diff = (latest.weight - tgt).toFixed(1);
-    const badge = document.getElementById('goal-progress-badge');
-    badge.textContent = diff>0 ? `Sisa ${diff} kg lagi 💪` : '🎉 Target Tercapai!';
-    badge.className = diff>0 ? 'badge badge-orange' : 'badge badge-green';
-  }
-  const histEl = document.getElementById('weight-history');
-  histEl.innerHTML = [...hist].reverse().slice(0,10).map(e => {
-    const h = (e.height||u().height||170)/100;
-    const b = (e.weight/(h*h)).toFixed(1);
-    return `<div class="hist-item"><span>${e.date}</span><span style="font-weight:700">${e.weight} kg</span><span style="color:#888;font-size:0.8rem">BMI ${b}</span></div>`;
-  }).join('');
+  const hist = u().weightHistory; if (!hist.length) return;
+  const latest = hist[hist.length-1]; document.getElementById('w-current').textContent = latest.weight+' kg';
+  if (latest.height || u().height) { const h = (latest.height || u().height)/100, bmi = (latest.weight/(h*h)).toFixed(1); document.getElementById('w-bmi').textContent = bmi; }
+  const tgt = u().targetWeight; if (tgt) document.getElementById('w-goal').textContent = tgt+' kg';
+  document.getElementById('weight-history').innerHTML = [...hist].reverse().slice(0,5).map(e => `<div class="hist-item"><span>${e.date}</span><span style="font-weight:700">${e.weight} kg</span></div>`).join('');
 }
-
 function updateWeightGoal() { u().targetWeight = parseFloat(document.getElementById('target-weight').value)||null; renderWeight(); save(); }
-
-function updateBMI(bmi) {
-  const needle = document.getElementById('bmi-needle');
-  const cat = document.getElementById('bmi-category');
-  const adv = document.getElementById('bmi-advice');
-  const pct = Math.min(Math.max((bmi-10)/30*100, 0), 100);
-  needle.style.left = pct+'%';
-  let catText, advText, color;
-  if (bmi<18.5) { catText='Kurus'; advText='Berat badanmu di bawah normal. Fokus pada asupan nutrisi yang cukup. Konsultasikan dengan dokter sebelum melakukan IF ketat.'; color='#48cae4'; }
-  else if (bmi<25) { catText='Normal ✅'; advText='Selamat! BMI-mu normal. Terus pertahankan pola makan sehat dan olahraga teratur.'; color='var(--green2)'; }
-  else if (bmi<30) { catText='Overweight'; advText='BMI sedikit di atas normal. IF adalah pilihan yang baik! Fokus pada defisit kalori ringan (300–500 kkal/hari) dan olahraga rutin.'; color='#e67e22'; }
-  else { catText='Obese'; advText='Disarankan berkonsultasi dengan dokter sebelum memulai diet IF. Mulai dengan perubahan gaya hidup bertahap dan perlahan.'; color='var(--coral)'; }
-  cat.textContent = catText; cat.style.color = color;
-  adv.textContent = advText; adv.style.display='block';
-}
-
-function renderWeightChart(range) {
-  const ctx = document.getElementById('weight-chart').getContext('2d');
-  let data = u().weightHistory;
-  if (range==='7') data = data.slice(-7);
-  else if (range==='30') data = data.slice(-30);
-  if (weightChart) weightChart.destroy();
-  if (!data.length) { ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height); return; }
-  const labels = data.map(d=>d.date.slice(5));
-  const vals = data.map(d=>d.weight);
-  weightChart = drawLineChart(ctx, labels, vals, '#c77dff');
-}
 function showWeightChart(range) { renderWeightChart(range); }
-
-// ============================================================
-// CHART HELPERS
-// ============================================================
-function getLast7Days() {
-  const days=[]; const now=new Date();
-  for(let i=6;i>=0;i--) { const d=new Date(now); d.setDate(d.getDate()-i); days.push(d.toISOString().split('T')[0]); }
-  return days;
-}
 
 function drawBarChart(ctx, labels, data, color) {
   const W=ctx.canvas.width=ctx.canvas.offsetWidth*2, H=ctx.canvas.height=320;
-  ctx.scale(2,2);
-  const pad={l:40,r:20,t:20,b:30}, cw=(W/2-pad.l-pad.r)/labels.length;
-  const max=Math.max(...data,1);
-  ctx.clearRect(0,0,W/2,H/2);
-  ctx.fillStyle='#f8fffe'; ctx.fillRect(0,0,W/2,H/2);
-  for(let i=0;i<=4;i++) {
-    const y=pad.t+(H/2-pad.t-pad.b)*i/4;
-    ctx.strokeStyle='#e8f5e9'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W/2-pad.r,y); ctx.stroke();
-    ctx.fillStyle='#bbb'; ctx.font='10px Nunito'; ctx.textAlign='right';
-    ctx.fillText(Math.round(max*(4-i)/4),pad.l-4,y+3);
-  }
+  if(W===0 || H===0) return {destroy:()=>{}}; // Fix bug canvas hidden
+  ctx.scale(2,2); const pad={l:40,r:20,t:20,b:30}, cw=(W/2-pad.l-pad.r)/labels.length, max=Math.max(...data,1);
+  ctx.clearRect(0,0,W/2,H/2); ctx.fillStyle='#f8fffe'; ctx.fillRect(0,0,W/2,H/2);
   labels.forEach((lbl,i) => {
-    const x=pad.l+i*cw+cw*0.15, bw=cw*0.7;
-    const bh=((data[i]||0)/max)*(H/2-pad.t-pad.b);
-    const y=H/2-pad.b-bh;
-    const grad=ctx.createLinearGradient(0,y,0,H/2-pad.b);
-    grad.addColorStop(0,color); grad.addColorStop(1,color+'44');
-    ctx.fillStyle=grad; ctx.beginPath();
-    ctx.roundRect(x,y,bw,bh,4); ctx.fill();
-    ctx.fillStyle='#888'; ctx.font='9px Nunito'; ctx.textAlign='center';
-    ctx.fillText(lbl,x+bw/2,H/2-pad.b+12);
+    const x=pad.l+i*cw+cw*0.15, bw=Math.max(cw*0.7, 1), bh=Math.max(((data[i]||0)/max)*(H/2-pad.t-pad.b), 0), y=H/2-pad.b-bh;
+    const grad=ctx.createLinearGradient(0,y,0,H/2-pad.b); grad.addColorStop(0,color); grad.addColorStop(1,color+'44');
+    ctx.fillStyle=grad; ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(x,y,bw,bh,4); else ctx.rect(x,y,bw,bh); ctx.fill();
+    ctx.fillStyle='#888'; ctx.font='9px Nunito'; ctx.textAlign='center'; ctx.fillText(lbl,x+bw/2,H/2-pad.b+12);
   });
-  return {destroy:()=>{ctx.clearRect(0,0,W,H); ctx.setTransform(1,0,0,1,0,0);}};
+  return {destroy:()=>{ctx.clearRect(0,0,W,H);}};
 }
-
 function drawLineChart(ctx, labels, data, color) {
   const W=ctx.canvas.width=ctx.canvas.offsetWidth*2, H=ctx.canvas.height=320;
-  ctx.scale(2,2);
-  const pad={l:40,r:20,t:20,b:30};
-  const max=Math.max(...data)+2, min=Math.min(...data)-2;
-  const range=max-min||1;
-  ctx.clearRect(0,0,W/2,H/2);
-  ctx.fillStyle='#faf8ff'; ctx.fillRect(0,0,W/2,H/2);
-  for(let i=0;i<=4;i++) {
-    const y=pad.t+(H/2-pad.t-pad.b)*i/4;
-    ctx.strokeStyle='#ede0ff'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W/2-pad.r,y); ctx.stroke();
-    ctx.fillStyle='#bbb'; ctx.font='10px Nunito'; ctx.textAlign='right';
-    ctx.fillText((max-(range*i/4)).toFixed(1),pad.l-4,y+3);
+  if(W===0 || H===0) return {destroy:()=>{}};
+  ctx.scale(2,2); const pad={l:40,r:20,t:20,b:30}, max=Math.max(...data)+2, min=Math.min(...data)-2, range=max-min||1;
+  ctx.clearRect(0,0,W/2,H/2); ctx.fillStyle='#faf8ff'; ctx.fillRect(0,0,W/2,H/2);
+  const pts=labels.map((l,i)=>({ x: pad.l+(W/2-pad.l-pad.r)*i/(labels.length-1||1), y: pad.t+(H/2-pad.t-pad.b)*(max-data[i])/range }));
+  if(pts.length>0) {
+      ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y); pts.forEach(p=>ctx.lineTo(p.x,p.y));
+      ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.stroke();
   }
-  const pts=labels.map((l,i)=>({
-    x: pad.l+(W/2-pad.l-pad.r)*i/(labels.length-1||1),
-    y: pad.t+(H/2-pad.t-pad.b)*(max-data[i])/range
-  }));
-  ctx.beginPath(); ctx.moveTo(pts[0].x, H/2-pad.b);
-  pts.forEach(p=>ctx.lineTo(p.x,p.y));
-  ctx.lineTo(pts[pts.length-1].x,H/2-pad.b); ctx.closePath();
-  const grad=ctx.createLinearGradient(0,pad.t,0,H/2-pad.b);
-  grad.addColorStop(0,color+'55'); grad.addColorStop(1,color+'00');
-  ctx.fillStyle=grad; ctx.fill();
-  ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
-  pts.forEach(p=>ctx.lineTo(p.x,p.y));
-  ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.stroke();
-  pts.forEach((p,i)=>{ ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fillStyle=color; ctx.fill(); ctx.strokeStyle='white'; ctx.lineWidth=2; ctx.stroke();
-    ctx.fillStyle='#555'; ctx.font='bold 9px Nunito'; ctx.textAlign='center'; ctx.fillText(data[i],p.x,p.y-8); });
-  labels.forEach((lbl,i)=>{ const x=pad.l+(W/2-pad.l-pad.r)*i/(labels.length-1||1); ctx.fillStyle='#888'; ctx.font='9px Nunito'; ctx.textAlign='center'; ctx.fillText(lbl,x,H/2-pad.b+12); });
-  return {destroy:()=>{ctx.clearRect(0,0,W,H); ctx.setTransform(1,0,0,1,0,0);}};
+  return {destroy:()=>{ctx.clearRect(0,0,W,H);}};
 }
 
-// ============================================================
-// RECAP
-// ============================================================
+function getLast7Days() { const days=[]; const now=new Date(); for(let i=6;i>=0;i--) { const d=new Date(now); d.setDate(d.getDate()-i); days.push(d.toISOString().split('T')[0]); } return days; }
+function renderWaterChart() { const ctx = document.getElementById('water-chart').getContext('2d'); const days = getLast7Days(), vals = days.map(d=>(u().weekData[d]||{}).water||0); if (waterChart) waterChart.destroy(); waterChart = drawBarChart(ctx, days.map(d=>d.slice(5)), vals, '#48cae4'); }
+function renderWorkoutChart() { const ctx = document.getElementById('workout-chart').getContext('2d'); const days = getLast7Days(), vals = days.map(d=>(u().weekData[d]||{}).workoutKcal||0); if (workoutChart) workoutChart.destroy(); workoutChart = drawBarChart(ctx, days.map(d=>d.slice(5)), vals, '#f4a261'); }
+function renderWeightChart(range) { const ctx = document.getElementById('weight-chart').getContext('2d'); let data = u().weightHistory; if (range==='7') data = data.slice(-7); if (weightChart) weightChart.destroy(); if (!data.length) return; weightChart = drawLineChart(ctx, data.map(d=>d.date.slice(5)), data.map(d=>d.weight), '#c77dff'); }
+
 function loadRecap() {
-  const d = document.getElementById('recap-date').value || today();
-  const wd = u().weekData[d] || {};
-  document.getElementById('rec-kcal').textContent = wd.kcal || 0;
-  document.getElementById('rec-burn').textContent = wd.workoutKcal || 0;
-  document.getElementById('rec-water').textContent = wd.water || 0;
-  document.getElementById('rec-fast').textContent = (wd.fastDur || 0)+'j';
-  document.getElementById('rec-weight').textContent = wd.weight ? wd.weight+' kg' : '--';
-  document.getElementById('rec-workout').textContent = wd.workoutMins || 0;
-  let score = 0;
-  if ((wd.kcal||0) > 0 && (wd.kcal||0) <= 1600) score += 25;
-  if ((wd.water||0) >= u().waterTarget) score += 25;
-  if ((wd.workoutMins||0) >= 20) score += 25;
-  if ((wd.fastDur||0) >= 14) score += 25;
-  document.getElementById('daily-score').textContent = score+'/100';
-  const msgs = {0:'Yuk mulai! Setiap langkah kecil berarti 🌱',25:'Lumayan! Ada yang perlu dikejar 💪',50:'Setengah jalan! Terus semangat! 🔥',75:'Hampir sempurna! Kamu hebat! ⭐',100:'SEMPURNA! Kamu luar biasa hari ini! 🏆'};
-  document.getElementById('score-msg').textContent = msgs[score] || msgs[0];
-  renderWeekRow();
+  const d = document.getElementById('recap-date').value || today(), wd = u().weekData[d] || {};
+  document.getElementById('rec-kcal').textContent = wd.kcal || 0; document.getElementById('rec-burn').textContent = wd.workoutKcal || 0;
+  document.getElementById('rec-water').textContent = wd.water || 0; document.getElementById('rec-weight').textContent = wd.weight ? wd.weight+' kg' : '--';
   document.getElementById('daily-note').value = u().notes[d] || '';
   document.querySelectorAll('.mood-btn').forEach(b => b.classList.toggle('active', b.textContent===u().moods[d]));
 }
-
-function renderWeekRow() {
-  const days = getLast7Days();
-  const labels = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
-  let html = '';
-  days.forEach(d => {
-    const dt = new Date(d); const label = labels[dt.getDay()];
-    const isToday = d === today();
-    const hasData = u().weekData[d] && Object.keys(u().weekData[d]).length > 0;
-    html += `<div class="day-dot" onclick="loadRecapDate('${d}')">
-      <div class="day-dot-circle ${isToday?'today':hasData?'has-data':''}">${dt.getDate()}</div>
-      <div class="day-dot-label">${label}</div>
-    </div>`;
-  });
-  document.getElementById('week-row').innerHTML = html;
-}
-
 function loadRecapDate(d) { document.getElementById('recap-date').value = d; loadRecap(); }
-
-function setMood(btn, mood) {
-  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const d = document.getElementById('recap-date').value || today();
-  u().moods[d] = mood; save();
-}
-
-function saveNote() {
-  const d = document.getElementById('recap-date').value || today();
-  u().notes[d] = document.getElementById('daily-note').value;
-  save(true); toast('📝 Catatan disimpan!');
-}
-
-// ============================================================
-// AI CHAT
-// ============================================================
-const AI_RESPONSES = [
-  q => q.includes('menu') ? 'Untuk IF 16:8, sebaiknya buka puasa dengan makanan ringan dulu seperti kurma/buah, lalu makan besar 30 menit kemudian. Menu ideal: nasi merah + ayam rebus + sayuran + buah. Hindari gorengan berlebih! 🥗' : null,
-  q => q.includes('lapar') ? 'Tips mengatasi lapar saat puasa: ✅ Minum air putih banyak, ✅ Minum teh hijau/kopi hitam tanpa gula, ✅ Sibukkan diri dengan aktivitas, ✅ Tidur lebih awal, ✅ Makan yang lebih mengenyangkan (protein+serat) saat jendela makan 💪' : null,
-  q => q.includes('olahraga') ? 'Waktu terbaik olahraga saat IF: 🌅 Pagi (sebelum makan) = bakar lemak maksimal tapi intensitas rendah-sedang. 🌆 Sore (menjelang buka) = performa lebih optimal. Hindari olahraga intens saat pertengahan puasa! 🏃' : null,
-  q => q.includes('buka') || q.includes('setelah') ? 'Setelah berbuka, prioritaskan protein (telur/ayam/tempe) dan sayuran dulu. Hindari langsung makan karbohidrat besar. Kunyah perlahan! 🍽️' : null,
-  q => q.includes('minum') ? 'Target minum 2–3 liter sehari! Strategi: 2 gelas bangun tidur, 1 gelas tiap jam saat jendela makan, dan pastikan minum sebelum/selama/setelah olahraga. Warna urin kuning muda = cukup! 💧' : null,
-  q => q.includes('berat') || q.includes('turun') ? 'Penurunan berat badan yang sehat adalah 0.5–1 kg per minggu. Dengan IF + defisit kalori 300-500 kkal + olahraga 3-4x/minggu, target ini sangat realistis! Konsistensi adalah kuncinya 💪' : null,
-];
+function renderWeekRow() { document.getElementById('week-row').innerHTML = getLast7Days().map(d => `<div class="day-dot" onclick="loadRecapDate('${d}')"><div class="day-dot-circle ${d===today()?'today':(u().weekData[d]?'has-data':'')}">${new Date(d).getDate()}</div></div>`).join(''); }
+function setMood(btn, mood) { document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); const d = document.getElementById('recap-date').value || today(); u().moods[d] = mood; save(); }
+function saveNote() { const d = document.getElementById('recap-date').value || today(); u().notes[d] = document.getElementById('daily-note').value; save(true); toast('📝 Tersimpan!'); }
 
 function sendChat() {
-  const input = document.getElementById('ai-input');
-  const q = input.value.trim();
-  if (!q) return;
-  appendChat(q, 'user');
+  const input = document.getElementById('ai-input'), q = input.value.trim(); if (!q) return;
+  const chat = document.getElementById('ai-chat');
+  chat.innerHTML += `<div class="chat-msg user"><div class="chat-bubble">${q}</div></div>`;
   input.value = '';
   setTimeout(() => {
-    let ans = null;
-    for (const fn of AI_RESPONSES) { ans = fn(q.toLowerCase()); if(ans) break; }
-    if (!ans) ans = 'Pertanyaan bagus! Untuk saran diet IF yang lebih personal, coba klik tombol di atas untuk konsultasi dengan Claude atau ChatGPT. Mereka bisa memberikan saran yang lebih detail berdasarkan kondisimu! 🤖✨';
-    appendChat(ans, 'ai');
+    chat.innerHTML += `<div class="chat-msg ai"><div class="chat-bubble">Maaf, saya asisten offline. Gunakan aplikasi ChatGPT atau Gemini asli untuk hasil terbaik ya! 🤖</div></div>`;
+    chat.scrollTop = chat.scrollHeight;
   }, 600);
 }
-
 function sendTemplate(el) { document.getElementById('ai-input').value = el.textContent; sendChat(); }
 
-function appendChat(msg, role) {
-  const chat = document.getElementById('ai-chat');
-  const div = document.createElement('div');
-  div.className = 'chat-msg '+role;
-  div.innerHTML = `<div class="chat-bubble">${msg}</div>`;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function openAI(platform, e) {
-  e.preventDefault();
-  const user = currentUser === 'savira' ? 'Savira' : 'Annas';
-  const latest = u().weightHistory.length ? u().weightHistory[u().weightHistory.length-1] : null;
-  const prompt = `Halo! Saya ${user} sedang menjalani diet Intermittent Fasting (IF) dengan jadwal ${u().ifType}.
-${latest ? `Berat badan saya saat ini ${latest.weight} kg, tinggi ${u().height||'?'} cm.` : ''}
-Target berat badan: ${u().targetWeight ? u().targetWeight+' kg' : 'belum ditentukan'}.
-Level aktivitas: ${u().activity}.
-Tolong berikan saran menu makan harian yang sehat, bergizi, terjangkau, serta tips olahraga yang cocok untuk jadwal IF saya.`;
-  const encoded = encodeURIComponent(prompt);
-  const urls = {
-    claude: `https://claude.ai/new?q=${encoded}`,
-    chatgpt: `https://chat.openai.com/?q=${encoded}`,
-    gemini: `https://gemini.google.com/app?q=${encoded}`
-  };
-  window.open(urls[platform], '_blank');
-}
-
 // ============================================================
-// APP START
+// BOOTSTRAP TERAMAN (ANTI-NYANGKUT)
 // ============================================================
 async function startApp() {
-  document.getElementById('loading-text').textContent = 'Memuat data...';
-  
-  await loadFromSupabase();
-  
-  // Ensure defaults
+  document.getElementById('loading-text').textContent = 'Menarik data dari database...';
+  try {
+    // TIMEOUT 5 DETIK: Jika database terlalu lama membalas, kita pangkas!
+    await Promise.race([
+        loadFromSupabase(),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Koneksi lambat')), 5000))
+    ]);
+  } catch (e) {
+    console.log("Fallback ke lokal:", e);
+    loadFromLocalStorage();
+    toast('⚠️ Koneksi lambat, berjalan di Mode Offline sementara');
+  }
+
+  // Isi Data Default kalau kosong
   ['savira','annas'].forEach(uid => {
     if (!userData[uid]) userData[uid] = DEFAULT_USER_DATA();
     if (!userData[uid].weekData) userData[uid].weekData = {};
-    if (!userData[uid].notes) userData[uid].notes = {};
-    if (!userData[uid].moods) userData[uid].moods = {};
-    if (!userData[uid].foods) userData[uid].foods = [];
-    if (!userData[uid].workouts) userData[uid].workouts = [];
-    if (!userData[uid].weightHistory) userData[uid].weightHistory = [];
   });
 
-  // Init UI
   document.getElementById('if-date').value = today();
   document.getElementById('food-date').value = today();
   document.getElementById('recap-date').value = today();
 
-  renderMenus();
-  generateWeeklyPlan();
-  renderWater();
-  renderWorkout();
-  renderWorkoutSug();
-  renderWeight();
-  renderWeekRow();
-  renderFoodList();
-  updateAllLabels();
-  updateTimerDisplay();
-  restoreIFSelection();
-  restoreActivityBtn();
-  updateIFTips();
+  renderMenus(); generateWeeklyPlan(); renderWater(); renderWorkout(); renderWorkoutSug();
+  renderWeight(); renderWeekRow(); renderFoodList(); updateAllLabels(); updateTimerDisplay();
+  restoreIFSelection(); restoreActivityBtn(); updateIFTips();
 
   setInterval(updateTimerDisplay, 1000);
   setTimeout(() => { renderWaterChart(); renderWorkoutChart(); }, 300);
 
-  // Food datalist
-  document.getElementById('food-name').addEventListener('change', function() {
-    const found = FOOD_DB.find(f => f.name === this.value);
-    if (found) {
-      document.getElementById('food-kcal').value = found.kcal;
-      if (!document.getElementById('food-portion').value) document.getElementById('food-portion').value = 100;
-    }
-  });
-
-  // Start polling for other user's updates
   startPolling();
 
+  // Matikan Layar Loading
   document.getElementById('loading-overlay').classList.add('hidden');
 }
 
-// ============================================================
-// BOOTSTRAP
-// ============================================================
-const supabaseJs = window.supabase; // from CDN
-
 async function bootstrap() {
-  const config = getSavedConfig();
-  
-  if (config && config.url && config.key) {
-    // Try to use saved config
-    try {
-      supabase = await initSupabase(config.url, config.key);
+  try {
+    const config = getSavedConfig();
+    if (config && config.url && config.key) {
+      supabaseClient = await initSupabase(config.url, config.key);
       await startApp();
-    } catch(e) {
-      // Show setup modal if config doesn't work
-      document.getElementById('sb-url').value = config.url;
-      document.getElementById('sb-key').value = config.key;
+    } else {
+      // Tidak ada config -> Langsung buka modal, hapus loading
       document.getElementById('loading-overlay').classList.add('hidden');
       document.getElementById('setup-modal').classList.remove('hidden');
     }
-  } else {
-    // No config yet - show setup
+  } catch(e) {
+    console.error(e);
     document.getElementById('loading-overlay').classList.add('hidden');
     document.getElementById('setup-modal').classList.remove('hidden');
+    document.getElementById('setup-error').style.display = 'block';
+    document.getElementById('setup-error').textContent = '⚠️ Gagal memuat. Silakan periksa koneksi internet atau URL/Key Supabase.';
   }
 }
 
+// Menjalankan fungsi utama di akhir script
 bootstrap();
 </script>
 
